@@ -1,0 +1,430 @@
+{
+  "unit": "relative-pronoun",
+  "section": "quiz",
+  "title": "관계대명사 퀴즈",
+  "totalQuestions": 30,
+  "levels": {
+    "easy": "Q01-Q10 (기본 who/which/that 구분)",
+    "medium": "Q11-Q20 (선행사 찾기, 주격/목적격 구분)",
+    "hard": "Q21-Q30 (응용 직전 단계, 오류 찾기/생략/조합)"
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nI have a friend ___ lives in Busan.",
+      "choices": [
+        "who",
+        "which",
+        "what",
+        "where"
+      ],
+      "answer": "who",
+      "explanation": "선행사 'a friend'는 사람이고, 빈칸 뒤에 동사 'lives'가 바로 옴 = 주격 자리. 사람 + 주격 → who."
+    },
+    {
+      "id": "q02",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nThis is the phone ___ I bought yesterday.",
+      "choices": [
+        "who",
+        "which",
+        "what",
+        "whose"
+      ],
+      "answer": "which",
+      "explanation": "선행사 'the phone'은 사물, 빈칸 뒤에 주어 'I' + 동사 'bought' → 목적격. 사물 + 목적격 → which (또는 that)."
+    },
+    {
+      "id": "q03",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nLook at the dog ___ is running in the park.",
+      "choices": [
+        "who",
+        "which",
+        "whose",
+        "what"
+      ],
+      "answer": "which",
+      "explanation": "선행사 'the dog'은 동물/사물 취급. 뒤에 동사 'is running'이 바로 옴 = 주격. → which (또는 that)."
+    },
+    {
+      "id": "q04",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nShe is the girl ___ won the dance contest.",
+      "choices": [
+        "who",
+        "which",
+        "what",
+        "whose"
+      ],
+      "answer": "who",
+      "explanation": "선행사 'the girl'은 사람, 빈칸 뒤에 동사 'won' = 주격. 사람 + 주격 → who."
+    },
+    {
+      "id": "q05",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nI lost the pen ___ my dad gave me.",
+      "choices": [
+        "who",
+        "that",
+        "whose",
+        "where"
+      ],
+      "answer": "that",
+      "explanation": "선행사 'the pen'은 사물, 빈칸 뒤에 주어 'my dad' + 동사 'gave' = 목적격. 사물 + 목적격 → that (또는 which)."
+    },
+    {
+      "id": "q06",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nThe man ___ teaches us English is really funny.",
+      "choices": [
+        "who",
+        "which",
+        "what",
+        "whom"
+      ],
+      "answer": "who",
+      "explanation": "선행사 'the man'은 사람, 빈칸 뒤에 동사 'teaches' 바로 옴 = 주격. 사람 + 주격 → who."
+    },
+    {
+      "id": "q07",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nClaude is an AI ___ helps me with my homework.",
+      "choices": [
+        "who",
+        "that",
+        "what",
+        "whom"
+      ],
+      "answer": "that",
+      "explanation": "선행사 'an AI'는 사물 취급, 뒤에 동사 'helps' = 주격. → that (또는 which). 'who'는 사람에게만."
+    },
+    {
+      "id": "q08",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nHe is the singer ___ I like the most.",
+      "choices": [
+        "who",
+        "which",
+        "that",
+        "whose"
+      ],
+      "answer": "that",
+      "explanation": "선행사 'the singer'는 사람, 빈칸 뒤에 주어 'I' + 동사 'like' = 목적격. 격식체는 *whom*, 일상 영어는 *that*이 가장 일반적이지만 *who*도 흔히 사용. 셋 다 정답.",
+      "alternatives": [
+        "who",
+        "whom"
+      ]
+    },
+    {
+      "id": "q09",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nCats are animals ___ love fish.",
+      "choices": [
+        "who",
+        "which",
+        "what",
+        "where"
+      ],
+      "answer": "which",
+      "explanation": "선행사 'animals'는 사물/동물, 뒤에 동사 'love' = 주격. → which (또는 that)."
+    },
+    {
+      "id": "q10",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nMy sister has a doll ___ talks.",
+      "choices": [
+        "who",
+        "that",
+        "what",
+        "whose"
+      ],
+      "answer": "that",
+      "explanation": "선행사 'a doll'은 사물, 뒤에 동사 'talks' = 주격. → that (또는 which)."
+    },
+    {
+      "id": "q11",
+      "level": "medium",
+      "type": "antecedent",
+      "prompt": "다음 문장에서 밑줄 친 관계대명사의 선행사를 고르세요.\n\nMy English teacher **[who]** writes code is amazing.",
+      "choices": [
+        "My English teacher",
+        "writes code",
+        "code",
+        "amazing"
+      ],
+      "answer": "My English teacher",
+      "explanation": "관계대명사 바로 앞의 명사구 전체가 선행사. 'My(소유) + English(형용사) + teacher(핵심 명사)'가 한 덩어리. who 뒤에 나오는 'writes code'는 선행사가 아니라 그 명사구를 *꾸며주는* 관계절. 핵심 명사만 답하는 식으로 'English teacher' 또는 'teacher'도 인정.",
+      "alternatives": [
+        "English teacher",
+        "teacher"
+      ]
+    },
+    {
+      "id": "q12",
+      "level": "medium",
+      "type": "combine",
+      "prompt": "두 문장을 관계대명사로 한 문장으로 합쳐 보세요.\n\nI know a YouTuber.\nThe YouTuber has 1M subscribers.",
+      "answer": "I know a YouTuber who has 1M subscribers.",
+      "alternatives": [
+        "I know a YouTuber that has 1M subscribers."
+      ],
+      "explanation": "공통 단어 'YouTuber' (사람). 두 번째 문장의 'The YouTuber'를 who로 치환 → 두 문장 합치기. that도 정답 처리."
+    },
+    {
+      "id": "q13",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nThe video ___ I watched yesterday was so funny.",
+      "choices": [
+        "who",
+        "which",
+        "what",
+        "whose"
+      ],
+      "answer": "which",
+      "explanation": "선행사 'the video'는 사물, 뒤에 주어 'I' + 동사 'watched' = 목적격. → which (또는 that)."
+    },
+    {
+      "id": "q14",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "다음 중 관계대명사를 생략할 수 있는 문장을 고르세요.",
+      "choices": [
+        "I have a friend who lives in Seoul.",
+        "This is the book that I read yesterday.",
+        "She is the girl who won the contest.",
+        "The dog which is barking is mine."
+      ],
+      "answer": "This is the book that I read yesterday.",
+      "explanation": "관계대명사 생략은 *목적격*만 가능. 'that I read yesterday'는 that 뒤에 주어 'I' + 동사 'read'가 나오므로 목적격. → 'This is the book I read yesterday.' 가능. 나머지는 다 주격이라 생략 불가. (참고: 'who is + 분사' 같은 형태도 'who is' 통째로 생략 가능하지만 이건 중3 이상 범위.)"
+    },
+    {
+      "id": "q15",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nBTS is the group ___ I love the most.",
+      "choices": [
+        "who",
+        "which",
+        "that",
+        "whose"
+      ],
+      "answer": "that",
+      "explanation": "선행사 'the group'은 사물 취급(그룹/집단), 뒤에 주어 'I' + 동사 'love' = 목적격. → that (또는 which)."
+    },
+    {
+      "id": "q16",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nThe student ___ studies the hardest will get the A.",
+      "choices": [
+        "who",
+        "which",
+        "what",
+        "whose"
+      ],
+      "answer": "who",
+      "explanation": "선행사 'the student'는 사람, 뒤에 동사 'studies' = 주격. → who."
+    },
+    {
+      "id": "q17",
+      "level": "medium",
+      "type": "antecedent",
+      "prompt": "다음 문장에서 관계대명사의 선행사를 고르세요.\n\nThe book on the shelf that my sister gave me as a birthday present was wonderful.",
+      "choices": [
+        "book",
+        "shelf",
+        "sister",
+        "birthday"
+      ],
+      "answer": "book",
+      "explanation": "관계대명사 'that'이 가리키는 핵심 명사 = book. 'on the shelf'는 book을 꾸미는 전치사구, 'sister/birthday'는 관계절 안의 단어. 명사구 전체 'the book on the shelf'로 봐도 OK.",
+      "alternatives": [
+        "the book"
+      ]
+    },
+    {
+      "id": "q18",
+      "level": "medium",
+      "type": "combine",
+      "prompt": "두 문장을 관계대명사로 합쳐 보세요.\n\nThis is the cafe.\nI visited the cafe yesterday.",
+      "answer": "This is the cafe that I visited yesterday.",
+      "alternatives": [
+        "This is the cafe which I visited yesterday.",
+        "This is the cafe I visited yesterday."
+      ],
+      "explanation": "공통 단어 'the cafe' (사물). 두 번째 문장의 목적어 자리이므로 목적격 관계대명사. that/which 둘 다 OK이고, 목적격이라 생략도 가능."
+    },
+    {
+      "id": "q19",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nThe app ___ teaches grammar is popular among middle schoolers.",
+      "choices": [
+        "who",
+        "which",
+        "what",
+        "whose"
+      ],
+      "answer": "which",
+      "explanation": "선행사 'The app'은 사물, 뒤에 동사 'teaches' = 주격. → which (또는 that)."
+    },
+    {
+      "id": "q20",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nThe dog ___ I petted at the park was so cute.",
+      "choices": [
+        "who",
+        "that",
+        "what",
+        "whose"
+      ],
+      "answer": "that",
+      "explanation": "선행사 'The dog'은 사물/동물, 뒤에 주어 'I' + 동사 'petted' = 목적격. → that (또는 which)."
+    },
+    {
+      "id": "q21",
+      "level": "hard",
+      "type": "error",
+      "prompt": "다음 문장에서 잘못 쓰인 관계대명사를 찾아 고치세요.\n\nI have a friend which lives in Seoul.",
+      "answer": "which → who (또는 that)",
+      "explanation": "선행사 'a friend'는 *사람*. 사람 선행사에는 'which'를 못 씀. 사람 + 주격이므로 who 또는 that이 맞음."
+    },
+    {
+      "id": "q22",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 문장에서 관계대명사가 주격인지 목적격인지 고르세요.\n\nThe teacher who I respect the most retired last year.",
+      "choices": [
+        "주격",
+        "목적격"
+      ],
+      "answer": "목적격",
+      "explanation": "who 뒤에 주어 'I' + 동사 'respect'가 오므로 목적격. (구어에서는 whom이 더 정확하나 who도 일반적으로 허용.) 'the teacher'가 'I respect ___'의 목적어 자리에 있었음."
+    },
+    {
+      "id": "q23",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "두 문장의 차이점은 무엇인가요?\n\n(A) The boy who runs every morning is healthy.\n(B) The boy whom I met yesterday is my classmate.",
+      "choices": [
+        "둘 다 주격 관계대명사",
+        "둘 다 목적격 관계대명사",
+        "(A)는 주격, (B)는 목적격",
+        "(A)는 목적격, (B)는 주격"
+      ],
+      "answer": "(A)는 주격, (B)는 목적격",
+      "explanation": "(A)는 who 뒤에 동사 'runs'가 바로 옴 → 주격. (B)는 whom 뒤에 주어 'I' + 동사 'met' → 목적격. whom은 목적격 전용 형태."
+    },
+    {
+      "id": "q24",
+      "level": "hard",
+      "type": "antecedent",
+      "prompt": "다음 문장에서 관계대명사의 선행사를 고르세요.\n\nThe message from my friend that made me laugh was hilarious.",
+      "choices": [
+        "message",
+        "friend",
+        "me",
+        "laugh"
+      ],
+      "answer": "message",
+      "explanation": "that 앞에 'message'와 'friend' 둘 다 명사라 문법적으로는 어느 쪽도 가능. 다만 의미상 '나를 웃게 만든 것'은 message(메시지 내용)가 더 자연스러우며, 문장 끝 'was hilarious'와도 의미가 맞음. friend도 답으로 인정 — 그 친구가 직접 웃긴 짓을 했을 수도 있으니까. 핵심: 관계대명사 선행사는 *명사구 전체* 또는 *핵심 명사* 둘 다 가능.",
+      "alternatives": [
+        "friend"
+      ]
+    },
+    {
+      "id": "q25",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 중 관계대명사를 생략할 수 *없는* 문장을 고르세요.",
+      "choices": [
+        "The movie that I watched last night was great.",
+        "The man who lives next door is a doctor.",
+        "The song that BTS released yesterday is amazing.",
+        "The cake that my mom made tastes delicious."
+      ],
+      "answer": "The man who lives next door is a doctor.",
+      "explanation": "주격 관계대명사는 생략 불가. 'who lives next door'에서 who 뒤에 동사 'lives'가 바로 오므로 주격. 나머지 셋은 모두 목적격이라 생략 가능."
+    },
+    {
+      "id": "q26",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 문장의 빈칸에 가장 적절한 관계대명사는?\n\nI met a man and his dog ___ were both very friendly.",
+      "choices": [
+        "who",
+        "which",
+        "that",
+        "whose"
+      ],
+      "answer": "that",
+      "explanation": "선행사가 '사람(a man) + 사물/동물(his dog)' 동시 등장. 이럴 때는 만능 *that*을 씀. who나 which 단독으로는 둘 다 못 받음."
+    },
+    {
+      "id": "q27",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 문장의 콤마(,)가 있는 관계대명사의 특징으로 옳은 것은?\n\nMy mom, who lives in Daegu, calls me every day.",
+      "choices": [
+        "선행사를 한정한다 (어떤 mom인지 구분)",
+        "선행사에 추가 정보를 덧붙인다 (이미 누군지 알고, 정보만 추가)",
+        "that으로 바꿔 쓸 수 있다",
+        "관계대명사를 생략할 수 있다"
+      ],
+      "answer": "선행사에 추가 정보를 덧붙인다 (이미 누군지 알고, 정보만 추가)",
+      "explanation": "콤마가 있는 관계대명사절(=계속적 용법). '엄마'는 보통 한 명뿐이므로 어떤 엄마인지 구분할 필요 없음 → 그냥 '추가 정보(대구 사신다)'를 덧붙이는 역할. 이 형태에서는 that 사용 불가, 생략도 불가."
+    },
+    {
+      "id": "q28",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "who와 whom의 차이는?",
+      "choices": [
+        "who는 사람, whom은 사물에 쓴다",
+        "who는 주격, whom은 목적격에 쓴다",
+        "who는 단수, whom은 복수에 쓴다",
+        "who는 현재, whom은 과거에 쓴다"
+      ],
+      "answer": "who는 주격, whom은 목적격에 쓴다",
+      "explanation": "who = 주격 관계대명사 (다음에 동사가 바로 옴). whom = 목적격 관계대명사 (다음에 주어+동사가 옴). 구어에서는 목적격에도 who를 자주 쓰지만, 시험·격식체에서는 whom이 정답."
+    },
+    {
+      "id": "q29",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 문장에서 that이 주격인지 목적격인지 고르세요.\n\nThe phone that is on the table is mine.",
+      "choices": [
+        "주격",
+        "목적격"
+      ],
+      "answer": "주격",
+      "explanation": "that 뒤에 동사 'is'가 바로 옴 → 주격. 따라서 이 that은 생략 불가."
+    },
+    {
+      "id": "q30",
+      "level": "hard",
+      "type": "combine",
+      "prompt": "두 문장을 관계대명사로 합치고, 가능하면 생략까지 적용해 보세요.\n\nThis is the song.\nMy English teacher recommended the song.",
+      "answer": "This is the song my English teacher recommended.",
+      "alternatives": [
+        "This is the song that my English teacher recommended.",
+        "This is the song which my English teacher recommended."
+      ],
+      "explanation": "공통 단어 'the song' (사물). 두 번째 문장에서 'recommended'의 목적어 자리 = 목적격. that/which 가능, 그리고 목적격이라 생략까지 적용한 형태가 가장 자연스러움."
+    }
+  ]
+}

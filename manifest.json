@@ -1,0 +1,20 @@
+{
+  "name": "왈리와 함께하는 영문법",
+  "short_name": "뮤엠 그래머",
+  "description": "중학생 영어 문법을 이야기처럼 풀어내는 학습 앱",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF6ED",
+  "theme_color": "#185FA5",
+  "orientation": "portrait",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "assets/icon-512.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

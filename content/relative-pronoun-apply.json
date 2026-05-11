@@ -1,0 +1,194 @@
+{
+  "unit": "relative-pronoun",
+  "section": "apply",
+  "title": "관계대명사 응용 (고난도)",
+  "totalQuestions": 15,
+  "scope": "콤마 관계대명사(계속적 용법), 전치사 + 관계대명사, what(선행사 포함), whose(소유격), 영작, 오류 찾기",
+  "questions": [
+    {
+      "id": "a01",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "두 문장의 의미 차이로 가장 적절한 것은?\n\n(A) My brother who lives in Seoul is a doctor.\n(B) My brother, who lives in Seoul, is a doctor.",
+      "choices": [
+        "둘 다 완전히 같은 의미",
+        "(A) = 형이 여럿 중 '서울에 사는' 형만 의사",
+        "(B) = 형이 여럿 중 '서울에 사는' 형만 의사",
+        "(A) = 형이 한 명, (B) = 형이 여러 명"
+      ],
+      "answer": "(A) = 형이 여럿 중 '서울에 사는' 형만 의사",
+      "explanation": "(A) 콤마 없음 = 한정적 용법. 형이 여러 명일 수 있고 그중 '서울에 사는' 형을 콕 찝어 한정. (B) 콤마 있음 = 계속적 용법. 형은 한 명이고 '서울에 산다'는 부가 정보를 덧붙임. 콤마 하나가 의미를 뒤집는 시험 단골."
+    },
+    {
+      "id": "a02",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "빈칸에 들어갈 가장 자연스러운 표현은?\n\nThis is the house ___ I was born.",
+      "choices": [
+        "which",
+        "in which",
+        "what",
+        "that"
+      ],
+      "answer": "in which",
+      "explanation": "원래 두 문장은 'This is the house. I was born in the house.' 두 번째 문장의 'in the house'에서 in이 필수. 관계대명사로 합치면 전치사 in을 같이 가져와 'in which'로 묶음. 중3 범위인 관계부사 *where*로 대체 가능 → 'This is the house where I was born.' (둘 다 정답 인정)",
+      "alternatives": [
+        "where"
+      ]
+    },
+    {
+      "id": "a03",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 중 what의 쓰임이 옳은 문장은?",
+      "choices": [
+        "I have a friend what lives in Seoul.",
+        "This is the book what I read.",
+        "What I want is your honesty.",
+        "The man what is over there is my dad."
+      ],
+      "answer": "What I want is your honesty.",
+      "explanation": "what = 선행사를 이미 품고 있는 관계대명사 = 'the thing(s) which'. 'What I want' = '내가 원하는 것'. 나머지는 선행사가 따로 있어서(friend, book, man) what 사용 불가, who/that/which를 써야 함."
+    },
+    {
+      "id": "a04",
+      "level": "hard",
+      "type": "error",
+      "prompt": "다음 문장에서 잘못된 부분을 찾아 고치세요.\n\nMy mom, that lives in Daegu, calls me every day.",
+      "answer": "that → who",
+      "explanation": "콤마가 있는 계속적 용법에서는 that 사용 불가. 사람 선행사이므로 who로 고쳐야 함. (계속적 용법에서 사물은 which, 사람은 who 전용.)"
+    },
+    {
+      "id": "a05",
+      "level": "hard",
+      "type": "translate",
+      "prompt": "다음 문장을 영어로 옮기세요.\n\n내가 어제 산 책은 정말 재미있다.",
+      "answer": "The book that I bought yesterday is really interesting.",
+      "alternatives": [
+        "The book which I bought yesterday is really interesting.",
+        "The book I bought yesterday is really interesting."
+      ],
+      "explanation": "선행사 'the book' (사물), 목적격 자리 → that/which 가능, 목적격이라 생략까지 가능. 자연스러운 영어는 생략한 'The book I bought yesterday'."
+    },
+    {
+      "id": "a06",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 두 문장이 같은 의미가 되도록 빈칸을 채우세요.\n\nThe man whom I talked to is my uncle.\n= The man ___ ___ I talked is my uncle.",
+      "choices": [
+        "to whom",
+        "whom to",
+        "to which",
+        "which to"
+      ],
+      "answer": "to whom",
+      "explanation": "전치사 to를 관계대명사 앞으로 옮긴 형태. 사람이라 whom (which는 사물 전용). 격식체에서는 'to whom'이 더 일반적이고, 구어에서는 원본처럼 to를 뒤에 두는 형태가 흔함."
+    },
+    {
+      "id": "a07",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 관계대명사를 고르세요.\n\nI have a friend ___ father is a famous YouTuber.",
+      "choices": [
+        "who",
+        "whom",
+        "whose",
+        "which"
+      ],
+      "answer": "whose",
+      "explanation": "'친구의 아버지' = 소유 관계. 소유격 관계대명사 = whose. 'A friend whose father is a YouTuber' = '아버지가 유튜버인 친구'. 회화에서는 'My friend whose dad is a YouTuber'가 더 자연스러움. who/whom은 주격·목적격, which는 사물 전용."
+    },
+    {
+      "id": "a08",
+      "level": "hard",
+      "type": "error",
+      "prompt": "다음 문장에서 잘못된 부분을 찾아 고치세요.\n\nI have a friend whom is really smart.",
+      "answer": "whom → who",
+      "explanation": "whom 뒤에 동사 'is'가 바로 오면 주격 자리. 주격은 who. whom은 뒤에 주어+동사가 올 때만 (목적격)."
+    },
+    {
+      "id": "a09",
+      "level": "hard",
+      "type": "translate",
+      "prompt": "다음 문장을 영어로 옮기세요.\n\n코드를 짜는 영어쌤은 정말 멋있다.",
+      "answer": "The English teacher who writes code is really cool.",
+      "alternatives": [
+        "The English teacher that writes code is really cool."
+      ],
+      "explanation": "선행사 'The English teacher' (사람), 주격 관계대명사 자리 → who 또는 that. 'really cool' = '정말 멋있다'. (Ch3 차닐 쌤 영어쌤 모티프 응용.)"
+    },
+    {
+      "id": "a10",
+      "level": "hard",
+      "type": "antecedent",
+      "prompt": "다음 문장에서 관계대명사 that의 선행사를 고르세요.\n\nThe gift on the table that my friend sent me from Japan was beautiful.",
+      "choices": [
+        "gift",
+        "table",
+        "friend",
+        "Japan"
+      ],
+      "answer": "gift",
+      "explanation": "that 앞에 'gift'와 'table' 둘 다 있지만, 의미상 '친구가 보낸 것'은 선물(gift). 핵심 명사 = the gift. 'on the table'은 gift를 꾸미는 전치사구.",
+      "alternatives": [
+        "the gift"
+      ]
+    },
+    {
+      "id": "a11",
+      "level": "hard",
+      "type": "combine",
+      "prompt": "두 문장을 한 문장으로 합치세요. (계속적 용법 사용)\n\nMy English teacher uses Claude every day.\nMy English teacher is also a programmer.",
+      "answer": "My English teacher, who is also a programmer, uses Claude every day.",
+      "alternatives": [
+        "My English teacher, who uses Claude every day, is also a programmer."
+      ],
+      "explanation": "'My English teacher'는 보통 한 명만 가리킴 → 계속적 용법(콤마)이 자연스러움. who로 묶고 부가 정보 추가."
+    },
+    {
+      "id": "a12",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "빈칸에 들어갈 수 *없는* 것을 고르세요.\n\nThe app ___ teaches grammar is popular.",
+      "choices": [
+        "which",
+        "that",
+        "who",
+        "(생략)"
+      ],
+      "answer": "who",
+      "explanation": "선행사 'the app'은 사물 → who 불가 (who는 사람 전용). 주격이라 생략도 불가하지만, 가장 분명히 틀린 것은 who. which/that 둘 다 OK."
+    },
+    {
+      "id": "a13",
+      "level": "hard",
+      "type": "translate",
+      "prompt": "다음 문장을 영어로 옮기세요.\n\n내가 가장 좋아하는 것은 BTS의 음악이다.",
+      "answer": "What I like the most is BTS's music.",
+      "alternatives": [
+        "What I love the most is BTS's music."
+      ],
+      "explanation": "'내가 가장 좋아하는 것' = 'the thing that I like the most' = 'What I like the most'. 선행사가 별도로 없을 때는 what 활용."
+    },
+    {
+      "id": "a14",
+      "level": "hard",
+      "type": "error",
+      "prompt": "다음 문장에서 잘못된 부분을 찾아 고치세요.\n\nThe city which I was born is Seoul.",
+      "answer": "which → in which (또는 where)",
+      "explanation": "'I was born in the city'에서 in 전치사 필수. 관계대명사로 묶을 때 in을 같이 가져와 'in which'로. 중3 범위인 관계부사 where로 대체 가능: 'The city where I was born is Seoul.'"
+    },
+    {
+      "id": "a15",
+      "level": "hard",
+      "type": "combine",
+      "prompt": "세 문장을 한 문장으로 합치세요.\n\nI met a girl yesterday.\nThe girl's hair is purple.\nThe girl plays drums.",
+      "answer": "Yesterday I met a girl whose hair is purple and who plays drums.",
+      "alternatives": [
+        "I met a girl yesterday whose hair is purple and who plays drums.",
+        "I met a girl whose hair is purple and who plays drums yesterday."
+      ],
+      "explanation": "그 소녀에 대한 두 가지 정보를 관계대명사로 묶음. (1) 머리가 보라색 = 소유 → whose. (2) 드럼을 침 = 주격 → who. and로 연결. 'Yesterday'를 문장 맨 앞에 두는 게 가장 자연스러움 — 선행사 'a girl'과 관계절이 끊기지 않음."
+    }
+  ]
+}

@@ -1,0 +1,404 @@
+{
+  "unit": "passive-voice",
+  "section": "quiz",
+  "title": "수동태 퀴즈",
+  "totalQuestions": 30,
+  "levels": {
+    "easy": "Q01-Q10 (be + p.p. 기본)",
+    "medium": "Q11-Q20 (시제별, by 생략, 변환)",
+    "hard": "Q21-Q30 (자동사 함정, 4형식, by 외 전치사)"
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThe book ___ by Shakespeare.",
+      "choices": [
+        "was written",
+        "wrote",
+        "is writing",
+        "writes"
+      ],
+      "answer": "was written",
+      "explanation": "책은 쓰는 주체가 아니라 '쓰여진' 객체 → 수동태. 과거 = was + p.p.(written). 'write-wrote-written'."
+    },
+    {
+      "id": "q02",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nEnglish ___ in many countries.",
+      "choices": [
+        "is spoken",
+        "speaks",
+        "spoke",
+        "speaking"
+      ],
+      "answer": "is spoken",
+      "explanation": "영어는 '쓰이는' 대상. 보편 사실 = 현재 수동 = is/am/are + p.p. → is spoken. 'speak-spoke-spoken'."
+    },
+    {
+      "id": "q03",
+      "level": "easy",
+      "type": "combine",
+      "prompt": "능동태를 수동태로 바꾸세요.\n\nTom broke the window.",
+      "answer": "The window was broken by Tom.",
+      "alternatives": [
+        "The window was broken."
+      ],
+      "explanation": "Step 1: 목적어(the window) → 주어. Step 2: 동사 → be + p.p.(was broken). Step 3: 원래 주어 → by + 사람(by Tom). 행위자 강조 안 하면 by Tom 생략 가능."
+    },
+    {
+      "id": "q04",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThis phone ___ in Korea.",
+      "choices": [
+        "was made",
+        "made",
+        "is making",
+        "make"
+      ],
+      "answer": "was made",
+      "explanation": "폰은 '만들어지는' 객체 → 수동태. 'make-made-made'. 과거 수동 = was + p.p."
+    },
+    {
+      "id": "q05",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThe cake ___ by my mom yesterday.",
+      "choices": [
+        "made",
+        "was made",
+        "is made",
+        "makes"
+      ],
+      "answer": "was made",
+      "explanation": "어제(yesterday) 만들어진 케이크 → 과거 수동. was + p.p. = was made."
+    },
+    {
+      "id": "q06",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "다음 중 수동태 문장은?",
+      "choices": [
+        "She writes a letter.",
+        "The letter is written by her.",
+        "He runs fast.",
+        "I like K-pop."
+      ],
+      "answer": "The letter is written by her.",
+      "explanation": "수동태 = be + p.p. 형태. 'is written' = is(be) + written(p.p.) → 수동. 나머지는 모두 능동."
+    },
+    {
+      "id": "q07",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "동사 'eat'의 과거분사(p.p.)는?",
+      "choices": [
+        "eat",
+        "ate",
+        "eaten",
+        "eating"
+      ],
+      "answer": "eaten",
+      "explanation": "eat-ate-eaten. 세 번째 형태가 과거분사(p.p.). 수동태에 쓰는 건 항상 세 번째 형태."
+    },
+    {
+      "id": "q08",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nBTS ___ around the world.",
+      "choices": [
+        "loves",
+        "loved",
+        "is loved",
+        "is loving"
+      ],
+      "answer": "is loved",
+      "explanation": "BTS는 사랑하는 주체가 아니라 '사랑받는' 대상 → 수동태. 보편적 현재 = is + p.p. → is loved."
+    },
+    {
+      "id": "q09",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThe video ___ by 10 million people last week.",
+      "choices": [
+        "watched",
+        "watches",
+        "was watched",
+        "is watching"
+      ],
+      "answer": "was watched",
+      "explanation": "비디오는 '시청되는' 객체. 지난주 = 과거 → was + p.p. → was watched."
+    },
+    {
+      "id": "q10",
+      "level": "easy",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThis song ___ everywhere these days.",
+      "choices": [
+        "hears",
+        "is heard",
+        "heard",
+        "hearing"
+      ],
+      "answer": "is heard",
+      "explanation": "노래는 '들리는' 대상. 보편 현재 = is + p.p. → is heard. 'hear-heard-heard'."
+    },
+    {
+      "id": "q11",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "다음 능동태와 같은 의미의 수동태는?\n\nMy mom cooked dinner.",
+      "choices": [
+        "Dinner is cooked by my mom.",
+        "Dinner was cooked by my mom.",
+        "Dinner will be cooked by my mom.",
+        "Dinner has been cooked by my mom."
+      ],
+      "answer": "Dinner was cooked by my mom.",
+      "explanation": "원본이 과거 시제(cooked) → 수동도 과거. was + p.p. → was cooked."
+    },
+    {
+      "id": "q12",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThe homework ___ by tomorrow.",
+      "choices": [
+        "finishes",
+        "will be finished",
+        "is finishing",
+        "was finished"
+      ],
+      "answer": "will be finished",
+      "explanation": "내일까지 = 미래. 미래 수동 = will be + p.p. → will be finished."
+    },
+    {
+      "id": "q13",
+      "level": "medium",
+      "type": "combine",
+      "prompt": "수동태 문장을 능동태로 바꾸세요.\n\nThe app was made by 차닐 쌤.",
+      "answer": "차닐 쌤 made the app.",
+      "explanation": "수동 → 능동: by 뒤 사람을 주어로, 원래 주어를 목적어로. was made → made (과거 시제 유지)."
+    },
+    {
+      "id": "q14",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "다음 중 by가 가장 자연스럽게 *생략될 수 있는* 문장은?",
+      "choices": [
+        "The window was broken by Tom.",
+        "English is spoken by people in many countries.",
+        "This book was written by my favorite author.",
+        "The cake was made by my mom."
+      ],
+      "answer": "English is spoken by people in many countries.",
+      "explanation": "by 생략 케이스: 행위자가 너무 일반적이거나 안 중요할 때. '많은 나라 사람들'은 너무 일반적이라 생략해도 정보 손실 없음. 나머지는 행위자가 구체적이라 생략 시 어색."
+    },
+    {
+      "id": "q15",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThis app ___ since 2024.",
+      "choices": [
+        "uses",
+        "is using",
+        "has been used",
+        "was using"
+      ],
+      "answer": "has been used",
+      "explanation": "since 2024 = '2024년부터 지금까지' = 현재완료. 현재완료 수동 = have/has been + p.p. → has been used."
+    },
+    {
+      "id": "q16",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThe new song ___ next week.",
+      "choices": [
+        "releases",
+        "is released",
+        "will be released",
+        "was released"
+      ],
+      "answer": "will be released",
+      "explanation": "next week = 미래. 미래 수동 = will be + p.p. → will be released."
+    },
+    {
+      "id": "q17",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThe road ___ right now. Take another way.",
+      "choices": [
+        "repairs",
+        "is repairing",
+        "is being repaired",
+        "was repaired"
+      ],
+      "answer": "is being repaired",
+      "explanation": "지금 이 순간 진행 중인 수동 = 현재진행 수동 = is/are being + p.p. → is being repaired."
+    },
+    {
+      "id": "q18",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "다음 문장 중 *어색한* 것을 고르세요.",
+      "choices": [
+        "The Eiffel Tower was built in 1889.",
+        "This phone was made in Korea.",
+        "The meeting was attended by 100 people.",
+        "The accident was happened yesterday."
+      ],
+      "answer": "The accident was happened yesterday.",
+      "explanation": "happen은 자동사 → 수동태 불가. 'The accident happened yesterday.' 가 맞음."
+    },
+    {
+      "id": "q19",
+      "level": "medium",
+      "type": "error",
+      "prompt": "다음 문장에서 잘못된 부분을 찾아 고치세요.\n\nThe homework will be finish by tomorrow.",
+      "answer": "be finish → be finished",
+      "explanation": "조동사 + 수동 = 조동사 + be + p.p. 'will' 뒤에는 동사원형 be가 와야 하고, 그 다음에 과거분사 finished가 와야 함. 'be finish'는 동사 원형 두 개 연달아 와서 어색.",
+      "alternatives": [
+        "finish → finished",
+        "will be finish → will be finished"
+      ]
+    },
+    {
+      "id": "q20",
+      "level": "medium",
+      "type": "choice",
+      "prompt": "수동태가 더 자연스러운 상황은?",
+      "choices": [
+        "친구가 어제 한 일을 자랑할 때",
+        "내가 어제 한 일을 친구한테 말할 때",
+        "오래된 건물이 언제 지어졌는지 설명할 때",
+        "오늘 내가 무엇을 먹을지 결정할 때"
+      ],
+      "answer": "오래된 건물이 언제 지어졌는지 설명할 때",
+      "explanation": "수동태 자연스러운 상황: 행위자보다 *받은 대상*이 중심일 때. 건물은 누가 지었는지보다 '언제 지어졌는지' 자체가 주제 → 수동태. 'The building was built in 1900.'"
+    },
+    {
+      "id": "q21",
+      "level": "hard",
+      "type": "error",
+      "prompt": "다음 문장에서 잘못된 부분을 찾아 고치세요.\n\nThe accident was happened in front of my house.",
+      "answer": "was happened → happened",
+      "explanation": "happen은 자동사 → 수동태 불가. 'The accident happened in front of my house.'가 맞음."
+    },
+    {
+      "id": "q22",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 능동태를 수동태로 바꾼 것으로 *가능한 두 가지*는?\n\nHe gave me a book.",
+      "choices": [
+        "I was given a book by him. / A book was given to me by him.",
+        "I was given a book by him. / A book was given by me by him.",
+        "Me was given a book by him. / A book was given me by him.",
+        "He was given a book by me. / A book was given to him by me."
+      ],
+      "answer": "I was given a book by him. / A book was given to me by him.",
+      "explanation": "4형식(give 류)은 간접목적어(me)와 직접목적어(a book) 둘 다 주어로 수동 가능. 직접목적어를 주어로 하면 간접목적어 앞에 to 필수. ※ 실제 회화에서는 'I was given a book' 형태가 훨씬 자연스럽고, 'A book was given to me'는 문법은 맞지만 약간 어색 (수동의 수동 같은 느낌)."
+    },
+    {
+      "id": "q23",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 형태를 고르세요.\n\nThe rule ___ by everyone.",
+      "choices": [
+        "must obey",
+        "must obeys",
+        "must be obeyed",
+        "must obeyed"
+      ],
+      "answer": "must be obeyed",
+      "explanation": "조동사 + 수동 = 조동사 + be + p.p. 'must be obeyed' = '준수되어야 한다'. 조동사 뒤에는 항상 동사원형 → be."
+    },
+    {
+      "id": "q24",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 전치사를 고르세요.\n\nI am interested ___ coding.",
+      "choices": [
+        "at",
+        "in",
+        "on",
+        "with"
+      ],
+      "answer": "in",
+      "explanation": "be interested *in* ~ = '~에 관심 있다'. 감정 수동 표현은 by 안 쓰고 in을 씀. 굳어진 표현이라 그냥 외움."
+    },
+    {
+      "id": "q25",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 두 문장의 차이는?\n\n(A) This desk is made of wood.\n(B) Cheese is made from milk.",
+      "choices": [
+        "둘 다 같은 의미, 전치사만 다름",
+        "(A)는 재료가 그대로, (B)는 재료가 변형됨",
+        "(A)는 재료가 변형됨, (B)는 재료가 그대로",
+        "둘 다 잘못된 영어"
+      ],
+      "answer": "(A)는 재료가 그대로, (B)는 재료가 변형됨",
+      "explanation": "be made *of* ~ = 재료가 형태 그대로 보일 때(나무 책상의 나무). be made *from* ~ = 재료가 화학적/물리적으로 변형(우유 → 치즈). 시험 단골 차이."
+    },
+    {
+      "id": "q26",
+      "level": "hard",
+      "type": "combine",
+      "prompt": "능동태를 수동태로 바꾸세요. (5형식)\n\nWe call him 그램.",
+      "answer": "He is called 그램.",
+      "alternatives": [
+        "He is called 그램 by us."
+      ],
+      "explanation": "5형식(주어+동사+목적어+목적격보어) 수동: 목적어(him)가 주어(He)로, 목적격보어(그램)는 주격보어로 그대로. 'He is called 그램.' 회화에서는 'by us'를 생략하는 게 더 자연스러움 (누가 부르는지 뻔하니까)."
+    },
+    {
+      "id": "q27",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "다음 중 옳은 문장은?",
+      "choices": [
+        "I am interesting in coding.",
+        "I am interested in coding.",
+        "Coding is interested for me.",
+        "Coding is interest to me."
+      ],
+      "answer": "I am interested in coding.",
+      "explanation": "interesting = '재미 *주는*' (주는 쪽), interested = '관심 *받은/있는*' (받는 쪽). 내가 관심 있다 = I am interested. 코딩이 재밌다 = Coding is interesting."
+    },
+    {
+      "id": "q28",
+      "level": "hard",
+      "type": "choice",
+      "prompt": "빈칸에 알맞은 전치사를 고르세요.\n\nMy room is filled ___ books.",
+      "choices": [
+        "of",
+        "with",
+        "by",
+        "in"
+      ],
+      "answer": "with",
+      "explanation": "be filled *with* ~ = '~로 가득 차다'. by가 아닌 with. 굳어진 표현."
+    },
+    {
+      "id": "q29",
+      "level": "hard",
+      "type": "translate",
+      "prompt": "다음 문장을 영어로 옮기세요.\n\n이 앱은 차닐 쌤에 의해 만들어졌다.",
+      "answer": "This app was made by 차닐 쌤.",
+      "alternatives": [
+        "This app was created by 차닐 쌤."
+      ],
+      "explanation": "수동태 과거 = was + p.p. + by 행위자. make의 p.p. = made."
+    },
+    {
+      "id": "q30",
+      "level": "hard",
+      "type": "combine",
+      "prompt": "다음 능동태를 수동태로 바꾸세요.\n\nMillions of fans love BTS around the world.",
+      "answer": "BTS is loved by millions of fans around the world.",
+      "explanation": "현재 수동 = is + p.p. → is loved. 행위자(millions of fans)는 by 뒤. 부사구(around the world)는 끝에 자연스럽게."
+    }
+  ]
+}
