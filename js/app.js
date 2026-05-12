@@ -182,11 +182,30 @@ const routes = [
   { p: /^\/unit\/([^\/]+)\/result\/([^\/]+)$/, fn: (m) => renderResult({ unit: m[1], section: m[2] }) }
 ];
 
+function ensureHomeBtn() {
+  let btn = document.getElementById('homeBtn');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'homeBtn';
+    btn.className = 'home-btn';
+    btn.setAttribute('aria-label', '홈으로');
+    btn.textContent = '🏠';
+    btn.onclick = (e) => { e.preventDefault(); navigate('/'); };
+    btn.style.display = 'none';
+    const header = document.querySelector('.app-header');
+    if (header) header.appendChild(btn);
+  }
+  return btn;
+}
+
 function router() {
   const path = (window.location.hash || '#/').slice(1);
   const backBtn = document.getElementById('backBtn');
-  backBtn.style.display = path === '/' || path === '' ? 'none' : 'flex';
+  const homeBtn = ensureHomeBtn();
+  const isHome = path === '/' || path === '';
+  backBtn.style.display = isHome ? 'none' : 'flex';
   backBtn.onclick = () => history.length > 1 ? history.back() : navigate('/');
+  homeBtn.style.display = isHome ? 'none' : 'flex';
   for (const r of routes) {
     const m = path.match(r.p);
     if (m) { r.fn(m); window.scrollTo(0, 0); return; }
