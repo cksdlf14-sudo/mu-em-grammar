@@ -1,4 +1,4 @@
-/* 뮤엠 그래머 — 메인 앱 로직 (SPA + 라우터 + 퀴즈 엔진) */
+/* 뮤엠 그래머 — 메인 앱 로직 (SPA + 라우터 + 퀴즈 엔진 + 진도/오답 영구 저장) */
 
 // ===== 단원 메타데이터 =====
 const UNITS = {
@@ -54,19 +54,48 @@ function splitChapters(md) {
   return chapters.sort((a, b) => a.num - b.num);
 }
 
-// ===== 진도 (메모리 기반, 같은 세션 동안만 유지) =====
-const _progress = {};
+// ===== Storage 레이어 (localStorage 영구) =====
+const STORAGE_KEY = 'muem-grammar-v1';
+const Storage = {
+  load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return (parsed && typeof parsed === 'object') ? parsed : null;
+    } catch (e) { return null; }
+  },
+  save(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { /* quota 등 무시 */ }
+  },
+  reset() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  }
+};
+
+// ===== 진도 데이터 (localStorage 영구) =====
+let _progress = Storage.load() || {};
+function _saveProgress() { Storage.save(_progress); }
+
 function markChapterRead(unit, n) {
   if (!_progress[unit]) _progress[unit] = {};
-  if (!_progress[unit].story) _progress[unit].story = new Set();
-  _progress[unit].story.add(n);
+  if (!Array.isArray(_progress[unit].story)) _progress[unit].story = [];
+  if (!_progress[unit].story.includes(n)) _progress[unit].story.push(n);
+  _saveProgress();
 }
 function isChapterRead(unit, n) {
-  return _progress[unit]?.story?.has(n) || false;
+  const story = _progress[unit]?.story;
+  return Array.isArray(story) && story.includes(n);
 }
 function saveQuizScore(unit, section, correct, total) {
   if (!_progress[unit]) _progress[unit] = {};
-  _progress[unit][section] = { correct, total };
+  const prev = _progress[unit][section];
+  // 최고 점수만 유지 (재도전 시 떨어져도 기존 기록 보존)
+  if (!prev || correct > prev.correct) {
+    _progress[unit][section] = { correct, total };
+  }
+  _saveProgress();
 }
 function getQuizScore(unit, section) {
   return _progress[unit]?.[section] || null;
@@ -74,11 +103,65 @@ function getQuizScore(unit, section) {
 function computeUnitProgress(unit) {
   const u = UNITS[unit];
   let pct = 0;
-  const storyDone = _progress[unit]?.story?.size || 0;
+  const storyDone = _progress[unit]?.story?.length || 0;
   pct += (storyDone / u.storyTotal) * 33;
   if (_progress[unit]?.quiz) pct += 33;
   if (_progress[unit]?.apply) pct += 34;
   return Math.round(Math.min(100, pct));
+}
+
+// ===== 오답 노트 =====
+function recordWrongAnswer(unit, section, q, userAnswer) {
+  if (!_progress[unit]) _progress[unit] = {};
+  if (!Array.isArray(_progress[unit].wrong)) _progress[unit].wrong = [];
+  const entry = {
+    section,
+    qid: q.id,
+    prompt: q.prompt,
+    choices: q.choices || null,
+    answer: q.answer,
+    alternatives: q.alternatives || null,
+    explanation: q.explanation,
+    type: q.type,
+    level: q.level || 'medium',
+    userAnswer,
+    ts: Date.now()
+  };
+  const idx = _progress[unit].wrong.findIndex(w => w.qid === q.id && w.section === section);
+  if (idx >= 0) _progress[unit].wrong[idx] = entry;
+  else _progress[unit].wrong.push(entry);
+  _saveProgress();
+}
+function clearWrongAnswer(unit, qid, section) {
+  if (!_progress[unit]?.wrong) return;
+  _progress[unit].wrong = _progress[unit].wrong.filter(w => !(w.qid === qid && w.section === section));
+  _saveProgress();
+}
+function getWrongList(unit) {
+  return _progress[unit]?.wrong || [];
+}
+function getTotalWrong() {
+  return ['relative', 'passive'].reduce((sum, u) => sum + getWrongList(u).length, 0);
+}
+
+// ===== 이어서 풀기 (lastVisit) =====
+function setLastVisit(visit) {
+  _progress.lastVisit = visit;
+  _saveProgress();
+}
+function getLastVisit() {
+  return _progress.lastVisit || null;
+}
+function clearLastVisit() {
+  delete _progress.lastVisit;
+  _saveProgress();
+}
+function resumeUrl(lv) {
+  if (!lv || !UNITS[lv.unit]) return null;
+  if (lv.section === 'story') return `/unit/${lv.unit}/story/${lv.ch || 1}`;
+  if (lv.section === 'quiz' || lv.section === 'apply') return `/unit/${lv.unit}/${lv.section}`;
+  if (lv.section === 'review') return `/unit/${lv.unit}/review`;
+  return `/unit/${lv.unit}`;
 }
 
 // ===== 라우터 =====
@@ -91,6 +174,7 @@ const routes = [
   { p: /^\/unit\/([^\/]+)\/story\/(\d+)$/, fn: (m) => renderStoryChapter({ unit: m[1], ch: parseInt(m[2]) }) },
   { p: /^\/unit\/([^\/]+)\/quiz$/, fn: (m) => renderQuiz({ unit: m[1], section: 'quiz' }) },
   { p: /^\/unit\/([^\/]+)\/apply$/, fn: (m) => renderQuiz({ unit: m[1], section: 'apply' }) },
+  { p: /^\/unit\/([^\/]+)\/review$/, fn: (m) => renderReview({ unit: m[1] }) },
   { p: /^\/unit\/([^\/]+)\/result\/([^\/]+)$/, fn: (m) => renderResult({ unit: m[1], section: m[2] }) }
 ];
 
@@ -121,12 +205,43 @@ function charImg(name, alt) {
 
 // ===== 화면: 홈 =====
 function renderHome() {
+  const lv = getLastVisit();
+  const totalWrong = getTotalWrong();
+  let resumeCard = '';
+  if (lv && UNITS[lv.unit]) {
+    const u = UNITS[lv.unit];
+    const sectionLabel = { story: '이야기', quiz: '퀴즈', apply: '응용', review: '오답 복습' }[lv.section] || lv.section;
+    const detail = lv.section === 'story' ? `${lv.ch || 1}챕터부터` : `${(lv.idx || 0) + 1}번째 문제부터`;
+    const url = resumeUrl(lv);
+    resumeCard = `
+      <a class="resume-card" href="#${url}">
+        <div class="resume-card__chip">이어서 풀기</div>
+        <div class="resume-card__info">
+          <h3>${esc(u.title)} · ${sectionLabel}</h3>
+          <p>${esc(detail)}</p>
+        </div>
+        <span class="resume-card__arrow">→</span>
+      </a>`;
+  }
+  let reviewBanner = '';
+  if (totalWrong > 0) {
+    reviewBanner = `
+      <div class="review-banner">
+        <span class="review-banner__icon">📒</span>
+        <div class="review-banner__text">
+          <strong>오답 ${totalWrong}문제 모았어!</strong>
+          <span>각 단원에서 다시 풀어보자</span>
+        </div>
+      </div>`;
+  }
   $app().innerHTML = `
     <section class="hero">
       ${charImg('mascot-hero', '그램 — 어린 마법사')}
       <h1 class="hero-title">안녕! 나는 <span class="accent">그램</span>이야</h1>
       <p class="hero-sub">문법은 외우는 게 아니야.<br>마법처럼 이해하는 거야.</p>
     </section>
+    ${resumeCard}
+    ${reviewBanner}
     <section class="unit-list">
       <h2 class="section-title">오늘 어떤 마법을 배울까?</h2>
       ${unitCard('relative')}
@@ -159,9 +274,19 @@ function unitCard(id) {
 function renderUnit({ unit }) {
   const u = UNITS[unit];
   if (!u) { renderHome(); return; }
-  const storyDone = _progress[unit]?.story?.size || 0;
+  const storyDone = _progress[unit]?.story?.length || 0;
   const q = getQuizScore(unit, 'quiz');
   const a = getQuizScore(unit, 'apply');
+  const wrongCount = getWrongList(unit).length;
+  const reviewCard = wrongCount > 0 ? `
+      <a class="section-card section-card--review" href="#/unit/${unit}/review">
+        <div class="section-icon">📒</div>
+        <div class="section-info">
+          <h3>오답 복습</h3>
+          <p>${wrongCount}문제 다시 풀기</p>
+        </div>
+        <span class="section-arrow">→</span>
+      </a>` : '';
   $app().innerHTML = `
     <header class="unit-hero">
       <div class="unit-chip">중2 · ${u.lesson}</div>
@@ -181,7 +306,7 @@ function renderUnit({ unit }) {
         <div class="section-icon">⚡</div>
         <div class="section-info">
           <h3>퀴즈로 익히기</h3>
-          <p>${q ? `${q.correct}/${q.total} 정답` : '아직 안 풀었어요'}</p>
+          <p>${q ? `최고기록 ${q.correct}/${q.total} 정답` : '아직 안 풀었어요'}</p>
         </div>
         <span class="section-arrow">→</span>
       </a>
@@ -189,10 +314,11 @@ function renderUnit({ unit }) {
         <div class="section-icon">🪄</div>
         <div class="section-info">
           <h3>응용으로 마스터하기</h3>
-          <p>${a ? `${a.correct}/${a.total} 정답` : '아직 안 풀었어요'}</p>
+          <p>${a ? `최고기록 ${a.correct}/${a.total} 정답` : '아직 안 풀었어요'}</p>
         </div>
         <span class="section-arrow">→</span>
       </a>
+      ${reviewCard}
     </section>`;
 }
 
@@ -229,6 +355,7 @@ async function renderStoryChapter({ unit, ch }) {
     const chapter = chapters.find(c => c.num === ch);
     if (!chapter) { renderHome(); return; }
     markChapterRead(unit, ch);
+    setLastVisit({ unit, section: 'story', ch });
     const body = chapter.body.replace(/^## Ch\d+\..+$/m, '');
     const html = parseMd(body);
     const prev = chapters.find(c => c.num === ch - 1);
@@ -255,6 +382,7 @@ async function renderQuiz({ unit, section }) {
     const data = await loadContent(unit, section);
     _qs = {
       unit, section,
+      mode: 'normal',
       questions: data.questions,
       idx: 0, correct: 0,
       answered: false, userAnswer: null
@@ -264,16 +392,81 @@ async function renderQuiz({ unit, section }) {
     $app().innerHTML = `<p class="loading">로딩 실패: ${e.message}</p>`;
   }
 }
+
+// ===== 화면: 오답 복습 =====
+function renderReview({ unit }) {
+  const u = UNITS[unit];
+  if (!u) { renderHome(); return; }
+  const wrong = getWrongList(unit);
+  if (wrong.length === 0) {
+    $app().innerHTML = `
+      <div class="result-view">
+        <div class="result-emoji">🎉</div>
+        <div class="result-title">오답이 없어!</div>
+        <p class="result-message">${esc(u.title)} 전부 마스터한 거야. 다른 단원도 도전해볼까?</p>
+        <div class="result-actions">
+          <button class="btn-primary" onclick="navigate('/unit/${unit}')">${esc(u.title)}으로 돌아가기</button>
+          <button class="btn-secondary" onclick="navigate('/')">홈으로</button>
+        </div>
+      </div>`;
+    return;
+  }
+  // 오답 항목을 퀴즈 형식의 questions 배열로 변환
+  const questions = wrong.map(w => ({
+    id: w.qid,
+    type: w.type,
+    level: w.level,
+    prompt: w.prompt,
+    choices: w.choices || undefined,
+    answer: w.answer,
+    alternatives: w.alternatives || undefined,
+    explanation: w.explanation,
+    _reviewSection: w.section
+  }));
+  _qs = {
+    unit, section: 'review',
+    mode: 'review',
+    questions,
+    idx: 0, correct: 0,
+    answered: false, userAnswer: null
+  };
+  showQuestion();
+}
+
 function showQuestion() {
   const s = _qs;
   const q = s.questions[s.idx];
   if (!q) {
+    if (s.mode === 'review') {
+      // 복습 모드 결과: 별도 라우트 없이 인라인 결과
+      const total = s.questions.length;
+      const mastered = s.correct;
+      const remaining = getWrongList(s.unit).length;
+      $app().innerHTML = `
+        <div class="result-view">
+          <div class="result-emoji">${mastered === total ? '🏆' : mastered > 0 ? '✨' : '🌱'}</div>
+          <div class="result-title">${mastered === total ? '오답 다 마스터!' : '복습 완료'}</div>
+          <div class="result-score">${mastered} <small>/ ${total} 마스터</small></div>
+          <p class="result-message">${remaining === 0 ? '오답 노트가 비었어. 멋지다!' : `아직 ${remaining}문제가 남았어. 계속 도전!`}</p>
+          <div class="result-actions">
+            ${remaining > 0 ? `<button class="btn-primary" onclick="navigate('/unit/${s.unit}/review')">남은 오답 더 풀기 →</button>` : ''}
+            <button class="btn-secondary" onclick="navigate('/unit/${s.unit}')">단원으로</button>
+            <button class="btn-secondary" onclick="navigate('/')">홈으로</button>
+          </div>
+        </div>`;
+      return;
+    }
     saveQuizScore(s.unit, s.section, s.correct, s.questions.length);
+    clearLastVisit();
     navigate(`/unit/${s.unit}/result/${s.section}`);
     return;
   }
   s.answered = false;
   s.userAnswer = null;
+  // lastVisit 저장 (normal 모드만)
+  if (s.mode === 'normal') {
+    setLastVisit({ unit: s.unit, section: s.section, idx: s.idx });
+  }
   const pct = Math.round((s.idx / s.questions.length) * 100);
   let inputHtml = '';
   if (q.type === 'choice' || q.type === 'antecedent') {
@@ -284,12 +477,14 @@ function showQuestion() {
     inputHtml = `<textarea class="quiz-input" id="quizInput" placeholder="여기에 답을 입력해..."></textarea>`;
   }
   const levelLabel = { easy: '쉬움', medium: '보통', hard: '어려움' }[q.level] || q.level;
+  const reviewBadge = s.mode === 'review' ? `<span class="quiz-mode-chip">📒 복습 모드</span>` : '';
   $app().innerHTML = `
     <div class="quiz-header">
       <div class="quiz-progress"><span style="width:${pct}%"></span></div>
       <span class="quiz-count">${s.idx + 1} / ${s.questions.length}</span>
     </div>
     <div class="quiz-question">
+      ${reviewBadge}
       <span class="quiz-level-chip ${q.level}">${levelLabel}</span>
       <div class="quiz-prompt">${esc(q.prompt).replace(/\n/g, '<br>')}</div>
       ${inputHtml}
@@ -315,6 +510,14 @@ function submitAnswer() {
   if (!userAns) { alert('답을 먼저 선택하거나 입력해주세요.'); return; }
   const isCorrect = checkAnswer(q, userAns);
   if (isCorrect) s.correct++;
+
+  // 일반 모드: 틀리면 오답 노트에 추가 / 복습 모드: 맞으면 노트에서 제거
+  if (s.mode === 'normal') {
+    if (!isCorrect) recordWrongAnswer(s.unit, s.section, q, userAns);
+  } else if (s.mode === 'review') {
+    if (isCorrect) clearWrongAnswer(s.unit, q.id, q._reviewSection);
+  }
+
   s.answered = true;
   if (q.type === 'choice' || q.type === 'antecedent') {
     document.querySelectorAll('.quiz-choice').forEach(btn => {
@@ -331,7 +534,8 @@ function submitAnswer() {
   fb.innerHTML = `
     <div class="answer-row">${isCorrect ? '✓ 정답!' : '✗ 아쉬워!'}${!isCorrect ? ` 정답: <em>${esc(q.answer)}</em>` : ''}</div>
     <div>${esc(q.explanation)}</div>`;
-  document.getElementById('submitBtn').textContent = s.idx + 1 >= s.questions.length ? '결과 보기 →' : '다음 문제 →';
+  const isLast = s.idx + 1 >= s.questions.length;
+  document.getElementById('submitBtn').textContent = isLast ? '결과 보기 →' : '다음 문제 →';
 }
 function checkAnswer(q, userAns) {
   const correct = q.answer.trim().toLowerCase();
@@ -363,11 +567,13 @@ function renderResult({ unit, section }) {
   if (!score) { renderHome(); return; }
   const u = UNITS[unit];
   const pct = Math.round((score.correct / score.total) * 100);
+  const wrongCount = getWrongList(unit).length;
   let emoji, title, msg;
   if (pct >= 90) { emoji = '🏆'; title = '마법사 마스터!'; msg = '거의 완벽해. 그램이 인정한다.'; }
   else if (pct >= 70) { emoji = '✨'; title = '마법 습득!'; msg = '잘했어! 응용에서 한 번 더 확인해보자.'; }
   else if (pct >= 50) { emoji = '⚡'; title = '거의 다 왔어!'; msg = '이야기 한번 더 읽고 도전해보자.'; }
   else { emoji = '🌱'; title = '시작이 반!'; msg = '괜찮아. 그램도 처음엔 그랬어. 이야기부터 다시 보자.'; }
+  const reviewBtn = wrongCount > 0 ? `<button class="btn-primary" onclick="navigate('/unit/${unit}/review')">오답 ${wrongCount}개 복습하기 →</button>` : '';
   $app().innerHTML = `
     <div class="result-view">
       <div class="result-emoji">${emoji}</div>
@@ -379,8 +585,9 @@ function renderResult({ unit, section }) {
         <ul>${u.magicCard.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
       </div>
       <div class="result-actions">
-        ${section === 'quiz' ? `<button class="btn-primary" onclick="navigate('/unit/${unit}/apply')">응용 도전 →</button>` : ''}
-        ${section === 'apply' ? `<button class="btn-primary" onclick="navigate('/unit/${unit}/quiz')">퀴즈 다시 →</button>` : ''}
+        ${reviewBtn}
+        ${section === 'quiz' ? `<button class="btn-secondary" onclick="navigate('/unit/${unit}/apply')">응용 도전 →</button>` : ''}
+        ${section === 'apply' ? `<button class="btn-secondary" onclick="navigate('/unit/${unit}/quiz')">퀴즈 다시 →</button>` : ''}
         <button class="btn-secondary" onclick="navigate('/unit/${unit}')">단원으로 돌아가기</button>
         <button class="btn-secondary" onclick="navigate('/')">홈으로</button>
       </div>
@@ -445,10 +652,4 @@ function parseMd(md) {
   html = html.replace(/\[COMIC:([\w-]+)\]/g, (m, k) => (window.COMICS && window.COMICS[k]) || '');
   return html;
 }
-function inl(t) {
-  return esc(t)
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(/~~([^~]+)~~/g, '<del>$1</del>');
-}
+funct
