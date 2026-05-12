@@ -190,3 +190,12 @@ a { color: inherit; text-decoration: none; }
   60%  { opacity: 1; transform: translateY(2px) scale(1.05); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* ===== #12 힌트 시스템 ===== */
+.hint-btn { display: inline-flex; align-items: center; gap: 6px; background: #FFF3CD; color: #8A6900; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1px solid #F0DA8B; margin-top: 12px; transition: background 0.15s, transform 0.1s; }
+.hint-btn:hover { background: #FFE990; }
+.hint-btn:active { transform: scale(0.97); }
+.hint-box { display: flex; gap: 10px; background: #FFF8E0; border: 1px solid #F0DA8B; border-radius: var(--radius-md); padding: 12px 14px; margin-top: 12px; font-size: 14px; line-height: 1.5; color: #5A4A00; animation: hintIn 0.3s ease-out; }
+.hint-icon { font-size: 18px; line-height: 1.2; flex-shrink: 0; }
+.hint-text { flex: 1; }
+@keyframes hintIn { 0% { opacity: 0; transform: translateY(-4px); } 100% { opacity: 1; transform: translateY(0); } }
