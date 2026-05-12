@@ -572,10 +572,26 @@ function checkAnswer(q, userAns) {
     if (cw.length > 0 && matches / cw.length >= 0.7) return true;
   }
   if (q.type === 'error') {
+    // 1) 기존 토큰 매칭 (예: 학생이 "which → who" 형태로 답)
     const correctTokens = correct.split(/[→\s]+/).filter(Boolean);
     const userTokens = user.split(/[→\s]+/).filter(Boolean);
     const m = correctTokens.filter(t => userTokens.includes(t)).length;
     if (correctTokens.length > 0 && m / correctTokens.length >= 0.6) return true;
+
+    // 2) 화살표 뒤 키워드 매칭 (학생이 *문장 전체*나 *고친 단어만* 적은 경우)
+    //    예: 정답 "which → who (또는 that)" / 학생 답 "I have a friend who lives in Seoul"
+    const arrowMatch = q.answer.match(/→\s*(.+)/);
+    if (arrowMatch) {
+      const after = arrowMatch[1].toLowerCase().replace(/[()]/g, ' ');
+      // "또는", "or" 로 분리해서 키워드 후보 추출
+      const candidates = after.split(/\s*(?:또는|or)\s*/).map(s => s.trim()).filter(Boolean);
+      for (const cand of candidates) {
+        // 후보의 첫 단어 또는 전체 구를 학생 답에서 찾기
+        const firstWord = cand.split(/\s+/)[0];
+        if (firstWord && user.split(/\b/).includes(firstWord)) return true;
+        if (cand.length >= 2 && user.includes(cand)) return true;
+      }
+    }
   }
   return false;
 }
