@@ -154,3 +154,39 @@ a { color: inherit; text-decoration: none; }
 .section-card--review .section-icon { background: var(--c-accent); color: #5A4A00; }
 
 .quiz-mode-chip { display: inline-block; font-size: 11px; font-weight: 700; background: #FFF3CD; color: #8A6900; padding: 4px 10px; border-radius: 999px; margin-bottom: 8px; margin-right: 6px; }
+
+/* ===== #11 결과 화면 게이미피케이션 ===== */
+.result-view { padding: 20px 0 20px; text-align: center; }
+
+.result-newrecord { display: inline-block; background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); color: white; font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 999px; margin-bottom: 12px; box-shadow: var(--shadow-md); animation: bounceIn 0.6s ease-out; }
+
+.result-character { margin: 8px 0 12px; min-height: 120px; display: flex; align-items: center; justify-content: center; }
+.result-char-img { width: 140px; max-width: 50vw; height: auto; animation: popIn 0.5s ease-out; }
+.result-char-emoji { font-size: 80px; line-height: 1; animation: popIn 0.5s ease-out; }
+
+.result-stars { display: flex; justify-content: center; gap: 8px; margin: 8px 0 16px; }
+.result-star { font-size: 38px; line-height: 1; opacity: 0; transform: scale(0); animation: starPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.result-star.filled { color: #FFC93C; text-shadow: 0 2px 4px rgba(255,201,60,0.4); }
+.result-star.empty { color: rgba(26,43,61,0.18); }
+
+.result-title { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; color: var(--c-primary); margin-bottom: 4px; }
+.result-percent { font-size: 56px; font-weight: 800; color: var(--c-text); margin: 8px 0 2px; line-height: 1; letter-spacing: -0.02em; }
+.result-percent small { font-size: 22px; font-weight: 700; color: var(--c-text-mute); margin-left: 2px; }
+.result-score-sub { font-size: 13px; color: var(--c-text-mute); margin-bottom: 14px; }
+.result-message { font-size: 14px; color: var(--c-text-mute); line-height: 1.6; margin-bottom: 20px; padding: 0 8px; }
+
+/* 애니메이션 */
+@keyframes starPop {
+  0%   { opacity: 0; transform: scale(0) rotate(-20deg); }
+  60%  { opacity: 1; transform: scale(1.2) rotate(5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes bounceIn {
+  0%   { opacity: 0; transform: translateY(-12px) scale(0.8); }
+  60%  { opacity: 1; transform: translateY(2px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
