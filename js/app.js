@@ -78,6 +78,9 @@ const Storage = {
 let _progress = Storage.load() || {};
 function _saveProgress() { Storage.save(_progress); }
 
+// 결과화면용 일회성 플래그 (신기록 표시)
+let _lastResultNewRecord = false;
+
 function markChapterRead(unit, n) {
   if (!_progress[unit]) _progress[unit] = {};
   if (!Array.isArray(_progress[unit].story)) _progress[unit].story = [];
@@ -91,8 +94,9 @@ function isChapterRead(unit, n) {
 function saveQuizScore(unit, section, correct, total) {
   if (!_progress[unit]) _progress[unit] = {};
   const prev = _progress[unit][section];
-  // 최고 점수만 유지 (재도전 시 떨어져도 기존 기록 보존)
-  if (!prev || correct > prev.correct) {
+  // 신기록 여부 (이전 기록 없거나, 이전보다 정답 많을 때)
+  _lastResultNewRecord = !prev || correct > prev.correct;
+  if (_lastResultNewRecord) {
     _progress[unit][section] = { correct, total };
   }
   _saveProgress();
@@ -568,17 +572,38 @@ function renderResult({ unit, section }) {
   const u = UNITS[unit];
   const pct = Math.round((score.correct / score.total) * 100);
   const wrongCount = getWrongList(unit).length;
-  let emoji, title, msg;
-  if (pct >= 90) { emoji = '🏆'; title = '마법사 마스터!'; msg = '거의 완벽해. 그램이 인정한다.'; }
-  else if (pct >= 70) { emoji = '✨'; title = '마법 습득!'; msg = '잘했어! 응용에서 한 번 더 확인해보자.'; }
-  else if (pct >= 50) { emoji = '⚡'; title = '거의 다 왔어!'; msg = '이야기 한번 더 읽고 도전해보자.'; }
-  else { emoji = '🌱'; title = '시작이 반!'; msg = '괜찮아. 그램도 처음엔 그랬어. 이야기부터 다시 보자.'; }
+  const isNewRecord = _lastResultNewRecord;
+  _lastResultNewRecord = false;
+
+  let stars, charMood, title, msg;
+  if (pct >= 90) { stars = 3; charMood = 'cheer'; title = '마법사 마스터!'; msg = '거의 완벽해. 그램이 인정한다.'; }
+  else if (pct >= 70) { stars = 2; charMood = 'cheer'; title = '마법 습득!'; msg = '잘했어! 응용에서 한 번 더 확인해보자.'; }
+  else if (pct >= 50) { stars = 1; charMood = 'pointing'; title = '거의 다 왔어!'; msg = '이야기 한번 더 읽고 도전해보자.'; }
+  else { stars = 0; charMood = 'oops'; title = '시작이 반!'; msg = '괜찮아. 그램도 처음엔 그랬어. 이야기부터 다시 보자.'; }
+  const moodEmoji = { cheer: '🎉', pointing: '✨', oops: '🌱' }[charMood] || '✨';
+
+  let starsHtml = '';
+  for (let i = 0; i < 3; i++) {
+    const filled = i < stars;
+    starsHtml += `<span class="result-star ${filled ? 'filled' : 'empty'}" style="animation-delay:${i * 0.15}s">${filled ? '★' : '☆'}</span>`;
+  }
+
+  const newRecordBadge = isNewRecord ? `<div class="result-newrecord">🎉 신기록!</div>` : '';
   const reviewBtn = wrongCount > 0 ? `<button class="btn-primary" onclick="navigate('/unit/${unit}/review')">오답 ${wrongCount}개 복습하기 →</button>` : '';
+
   $app().innerHTML = `
     <div class="result-view">
-      <div class="result-emoji">${emoji}</div>
+      ${newRecordBadge}
+      <div class="result-character">
+        <img class="result-char-img" src="assets/character/mascot-${charMood}.png" alt="그램"
+          onerror="this.outerHTML='<div class=&quot;result-char-emoji&quot;>${moodEmoji}</div>'">
+      </div>
+      <div class="result-stars" aria-label="${stars}개 별 획득">
+        ${starsHtml}
+      </div>
       <div class="result-title">${title}</div>
-      <div class="result-score">${score.correct} <small>/ ${score.total}</small></div>
+      <div class="result-percent" id="resultPercent">0<small>%</small></div>
+      <div class="result-score-sub">${score.correct} / ${score.total} 정답</div>
       <p class="result-message">${msg}</p>
       <div class="magic-card">
         <h3>${u.title} 마법 카드</h3>
@@ -592,6 +617,20 @@ function renderResult({ unit, section }) {
         <button class="btn-secondary" onclick="navigate('/')">홈으로</button>
       </div>
     </div>`;
+
+  const el = document.getElementById('resultPercent');
+  if (el) {
+    const duration = 700;
+    const start = performance.now();
+    function tick(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const v = Math.round(pct * eased);
+      el.innerHTML = `${v}<small>%</small>`;
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
 }
 
 
@@ -652,4 +691,10 @@ function parseMd(md) {
   html = html.replace(/\[COMIC:([\w-]+)\]/g, (m, k) => (window.COMICS && window.COMICS[k]) || '');
   return html;
 }
-funct
+function inl(t) {
+  return esc(t)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/~~([^~]+)~~/g, '<del>$1</del>');
+}
