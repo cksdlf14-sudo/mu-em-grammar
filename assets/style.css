@@ -199,3 +199,8 @@ a { color: inherit; text-decoration: none; }
 .hint-icon { font-size: 18px; line-height: 1.2; flex-shrink: 0; }
 .hint-text { flex: 1; }
 @keyframes hintIn { 0% { opacity: 0; transform: translateY(-4px); } 100% { opacity: 1; transform: translateY(0); } }
+
+/* 홈 버튼 (헤더 오른쪽) */
+.home-btn { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-left: auto; transition: background 0.15s, transform 0.1s; }
+.home-btn:hover { background: var(--c-primary-soft); }
+.home-btn:active { transform: scale(0.95); }
