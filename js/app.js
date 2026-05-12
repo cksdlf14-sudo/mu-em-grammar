@@ -482,6 +482,9 @@ function showQuestion() {
   }
   const levelLabel = { easy: '쉬움', medium: '보통', hard: '어려움' }[q.level] || q.level;
   const reviewBadge = s.mode === 'review' ? `<span class="quiz-mode-chip">📒 복습 모드</span>` : '';
+  const hintHtml = q.hint ? `
+      <button class="hint-btn" id="hintBtn" onclick="showHint()">💡 힌트 보기</button>
+      <div class="hint-box" id="hintBox" hidden></div>` : '';
   $app().innerHTML = `
     <div class="quiz-header">
       <div class="quiz-progress"><span style="width:${pct}%"></span></div>
@@ -492,11 +495,23 @@ function showQuestion() {
       <span class="quiz-level-chip ${q.level}">${levelLabel}</span>
       <div class="quiz-prompt">${esc(q.prompt).replace(/\n/g, '<br>')}</div>
       ${inputHtml}
+      ${hintHtml}
       <div id="quizFeedback"></div>
     </div>
     <div class="quiz-actions">
       <button class="btn-primary" id="submitBtn" onclick="submitAnswer()">정답 확인</button>
     </div>`;
+}
+function showHint() {
+  const q = _qs && _qs.questions[_qs.idx];
+  if (!q || !q.hint) return;
+  const box = document.getElementById('hintBox');
+  const btn = document.getElementById('hintBtn');
+  if (box && btn) {
+    box.innerHTML = `<span class="hint-icon">💡</span><span class="hint-text">${esc(q.hint)}</span>`;
+    box.hidden = false;
+    btn.style.display = 'none';
+  }
 }
 function selectChoice(btn) {
   document.querySelectorAll('.quiz-choice').forEach(b => b.classList.remove('selected'));
