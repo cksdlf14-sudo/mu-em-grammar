@@ -70,17 +70,13 @@ function getStudent() {
   } catch (e) { return null; }
 }
 function setStudent(student) {
-  // 첫 설정 시 기존 익명 데이터(muem-grammar-v1)를 학생 키로 마이그레이션
-  const oldKey = 'muem-grammar-v1';
+  // 새 학생은 항상 빈 진도로 시작 (익명 데이터 마이그레이션 안 함)
   const newKey = `muem-grammar-v1__${student.name}`;
-  const existing = localStorage.getItem(oldKey);
-  if (existing && !localStorage.getItem(newKey)) {
-    localStorage.setItem(newKey, existing);
-  }
+  const isFirstTime = !localStorage.getItem(newKey);
   localStorage.setItem(STUDENT_KEY, JSON.stringify(student));
   _progress = Storage.load() || {};
   if (typeof window !== 'undefined' && window.logEvent) {
-    window.logEvent('login', { extra: { firstTime: !existing, classKey: student.classKey } });
+    window.logEvent('login', { extra: { firstTime: isFirstTime, classKey: student.classKey } });
   }
 }
 function clearStudent() {
