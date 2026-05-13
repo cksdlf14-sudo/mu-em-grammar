@@ -95,3 +95,47 @@ window.addEventListener('online', _trFlush);
 window.addEventListener('load', _trFlush);
 // 페이지 떠나기 전 마지막 시도 (queued events flush)
 window.addEventListener('pagehide', _trFlush);
+
+/**
+ * 학생 회원가입 (Apps Script register endpoint 호출)
+ * @returns Promise<{status, ...}>
+ */
+window.registerStudent = async function(studentData) {
+  if (!TRACKER_URL || TRACKER_URL.indexOf('PASTE_YOUR') === 0) {
+    return { status: 'no_backend' };
+  }
+  const payload = {
+    action: 'register',
+    studentName: studentData.name,
+    studentClass: studentData.classKey,
+    parentName: studentData.parentName || '',
+    phone: studentData.phone || '',
+    address: studentData.address || ''
+  };
+  try {
+    const res = await fetch(TRACKER_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  } catch (e) {
+    return { status: 'network_error', message: e.toString() };
+  }
+};
+
+/**
+ * 학생 승인 상태 조회 (Apps Script check_status endpoint 호출)
+ * @returns Promise<{status, approval?, ...}>
+ */
+window.checkApprovalStatus = async function(studentName) {
+  if (!TRACKER_URL || TRACKER_URL.indexOf('PASTE_YOUR') === 0) {
+    return { status: 'no_backend' };
+  }
+  try {
+    const url = TRACKER_URL + '?action=check_status&student=' + encodeURIComponent(studentName);
+    const res = await fetch(url);
+    return await res.json();
+  } catch (e) {
+    return { status: 'network_error', message: e.toString() };
+  }
+};

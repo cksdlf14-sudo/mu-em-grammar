@@ -229,7 +229,8 @@ const routes = [
   { p: /^\/unit\/([^\/]+)\/review$/, fn: (m) => renderReview({ unit: m[1] }) },
   { p: /^\/unit\/([^\/]+)\/result\/([^\/]+)$/, fn: (m) => renderResult({ unit: m[1], section: m[2] }) },
   { p: /^\/onboard$/, fn: () => renderOnboarding() },
-  { p: /^\/profile$/, fn: () => renderProfile() }
+  { p: /^\/profile$/, fn: () => renderProfile() },
+  { p: /^\/pending$/, fn: () => renderPendingApproval() }
 ];
 
 function ensureHomeBtn() {
@@ -253,12 +254,22 @@ function router() {
   const backBtn = document.getElementById('backBtn');
   const homeBtn = ensureHomeBtn();
 
-  // 학생 정보 없으면 강제 온보딩 (단, /onboard 직접 접근은 허용)
+  // 학생 정보 없으면 강제 온보딩
   const student = getStudent();
   if (!student && path !== '/onboard') {
     backBtn.style.display = 'none';
     homeBtn.style.display = 'none';
     renderOnboarding();
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  // 학생 있지만 승인 안 났으면 대기 화면 (단, /onboard, /pending 직접 접근 허용)
+  if (student && student.approval && student.approval !== 'approved'
+      && path !== '/onboard' && path !== '/pending') {
+    backBtn.style.display = 'none';
+    homeBtn.style.display = 'none';
+    renderPendingApproval();
     window.scrollTo(0, 0);
     return;
   }
@@ -287,10 +298,10 @@ function charImg(name, alt) {
     onerror="this.outerHTML='<div class=&quot;char-placeholder&quot;>그램 일러스트<small>(폴더 동기화 대기)</small></div>'">`;
 }
 
-// ===== 화면: 온보딩 (이름 + 반 선택) =====
+// ===== 화면: 온보딩 (회원가입 폼) =====
 function renderOnboarding() {
   const existing = getStudent();
-  const initialName = existing ? existing.name : '';
+  const isEdit = existing && existing.approval === 'approved';
   const initialClass = existing ? existing.classKey : '';
   const classCards = Object.entries(CLASS_INFO).map(([key, info]) => `
     <button class="class-card ${initialClass === key ? 'selected' : ''}" data-class="${key}"
@@ -305,20 +316,38 @@ function renderOnboarding() {
     <section class="onboard-view">
       <div class="onboard-greet">
         ${charImg('mascot-hero', '그램')}
-        <h1 class="onboard-title">${existing ? '프로필 수정' : '안녕! 반가워'}</h1>
-        <p class="onboard-sub">${existing ? '이름이나 반을 바꿀 수 있어' : '시작하기 전에 너에 대해 알려줄래?'}</p>
+        <h1 class="onboard-title">${isEdit ? '프로필 수정' : '회원가입'}</h1>
+        <p class="onboard-sub">${isEdit ? '반만 바꿀 수 있어 (이름은 고정)' : '시작하기 전에 너에 대해 알려줘. 원장님이 확인 후 승인해주실 거야.'}</p>
       </div>
       <div class="onboard-section">
-        <label class="onboard-label" for="studentName">이름</label>
-        <input type="text" id="studentName" class="onboard-input" placeholder="예: 홍길동" maxlength="20" value="${esc(initialName)}">
+        <label class="onboard-label" for="studentName">이름 <span class="required">*</span></label>
+        <input type="text" id="studentName" class="onboard-input" placeholder="예: 홍길동" maxlength="20"
+          value="${esc(existing?.name || '')}" ${isEdit ? 'disabled' : ''}>
+      </div>
+      ${isEdit ? '' : `
+      <div class="onboard-section">
+        <label class="onboard-label" for="parentName">학부모 이름 <span class="required">*</span></label>
+        <input type="text" id="parentName" class="onboard-input" placeholder="예: 홍길동 부모님" maxlength="20"
+          value="${esc(existing?.parentName || '')}">
       </div>
       <div class="onboard-section">
-        <label class="onboard-label">어느 반이야?</label>
+        <label class="onboard-label" for="studentPhone">전화번호 <span class="required">*</span></label>
+        <input type="tel" id="studentPhone" class="onboard-input" placeholder="010-0000-0000" maxlength="14"
+          value="${esc(existing?.phone || '')}">
+      </div>
+      <div class="onboard-section">
+        <label class="onboard-label" for="studentAddress">주소 <span class="optional">(선택)</span></label>
+        <input type="text" id="studentAddress" class="onboard-input" placeholder="동/구 정도만" maxlength="40"
+          value="${esc(existing?.address || '')}">
+      </div>
+      `}
+      <div class="onboard-section">
+        <label class="onboard-label">어느 반이야? <span class="required">*</span></label>
         <div class="class-grid">${classCards}</div>
       </div>
       <div class="onboard-actions">
-        <button class="btn-primary onboard-start" onclick="finishOnboarding()">${existing ? '저장' : '시작하기 →'}</button>
-        ${existing ? '<button class="btn-secondary" onclick="navigate(\'/\')">취소</button>' : ''}
+        <button class="btn-primary onboard-start" onclick="finishOnboarding()">${isEdit ? '저장' : '회원가입 →'}</button>
+        ${isEdit ? '<button class="btn-secondary" onclick="navigate(\'/\')">취소</button>' : ''}
       </div>
     </section>
   `;
@@ -327,7 +356,9 @@ function selectClass(btn) {
   document.querySelectorAll('.class-card').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 }
-function finishOnboarding() {
+async function finishOnboarding() {
+  const existing = getStudent();
+  const isEdit = existing && existing.approval === 'approved';
   const nameEl = document.getElementById('studentName');
   const name = (nameEl?.value || '').trim();
   const selectedBtn = document.querySelector('.class-card.selected');
@@ -335,13 +366,105 @@ function finishOnboarding() {
   if (!name) { alert('이름을 적어줘 :)'); nameEl?.focus(); return; }
   if (name.length > 20) { alert('이름이 너무 길어. 20자 이내로!'); return; }
   if (!classKey) { alert('반을 골라줘!'); return; }
-  setStudent({ name, classKey, since: Date.now() });
-  navigate('/');
+
+  // 편집 모드: 반만 변경
+  if (isEdit) {
+    const updated = { ...existing, classKey };
+    setStudent(updated);
+    navigate('/');
+    return;
+  }
+
+  // 신규 가입 모드: 학부모/전화 필수
+  const parentName = (document.getElementById('parentName')?.value || '').trim();
+  const phone = (document.getElementById('studentPhone')?.value || '').trim();
+  const address = (document.getElementById('studentAddress')?.value || '').trim();
+  if (!parentName) { alert('학부모 이름은 필수야!'); return; }
+  if (!phone) { alert('전화번호는 필수야!'); return; }
+
+  const btn = document.querySelector('.onboard-start');
+  if (btn) { btn.disabled = true; btn.textContent = '회원가입 중...'; }
+
+  let result = { status: 'no_backend' };
+  if (window.registerStudent) {
+    result = await window.registerStudent({ name, classKey, parentName, phone, address });
+  }
+
+  if (result.status === 'ok' || result.status === 'ok_no_mail' || result.status === 'already_registered') {
+    setStudent({
+      name, classKey, parentName, phone, address,
+      approval: 'pending', since: Date.now()
+    });
+    navigate('/pending');
+  } else if (result.status === 'no_backend') {
+    // 백엔드 미연결: 폴백으로 자동 승인 (개발용)
+    setStudent({
+      name, classKey, parentName, phone, address,
+      approval: 'approved', since: Date.now()
+    });
+    navigate('/');
+  } else {
+    alert('회원가입 실패: ' + (result.message || JSON.stringify(result)));
+    if (btn) { btn.disabled = false; btn.textContent = '회원가입 →'; }
+  }
 }
 
-// ===== 화면: 프로필 (이름/반 수정) =====
+// ===== 화면: 프로필 (반 수정 전용) =====
 function renderProfile() {
-  renderOnboarding(); // 같은 화면 재활용
+  renderOnboarding();
+}
+
+// ===== 화면: 승인 대기 =====
+function renderPendingApproval() {
+  const student = getStudent();
+  if (!student) { navigate('/onboard'); return; }
+  if (student.approval === 'approved') { navigate('/'); return; }
+  const classInfo = CLASS_INFO[student.classKey] || {};
+  $app().innerHTML = `
+    <section class="pending-view">
+      ${charImg('mascot-hero', '그램')}
+      <h1 class="pending-title">⏳ 원장님 승인 대기 중</h1>
+      <p class="pending-desc">
+        원장님께 가입 알림이 보내졌어!<br>
+        승인이 끝나면 자동으로 시작할 수 있어.<br>
+        <small>(15초마다 자동 확인 중)</small>
+      </p>
+      <div class="pending-info">
+        <div class="pending-info__row"><span>이름</span><strong>${esc(student.name)}</strong></div>
+        <div class="pending-info__row"><span>반</span><strong>${esc(classInfo.name || student.classKey)}</strong></div>
+        <div class="pending-info__row"><span>학부모</span><strong>${esc(student.parentName || '-')}</strong></div>
+        <div class="pending-info__row"><span>전화</span><strong>${esc(student.phone || '-')}</strong></div>
+      </div>
+      <div class="pending-actions">
+        <button class="btn-primary" onclick="manualCheckApproval(false)">승인 확인 다시 →</button>
+        <button class="btn-secondary" onclick="if(confirm('정말 다른 정보로 다시 가입할래?')) { clearStudent(); navigate('/onboard'); }">다시 가입하기</button>
+      </div>
+    </section>
+  `;
+  // 15초마다 자동 polling
+  if (window._approvalPollTimer) clearInterval(window._approvalPollTimer);
+  window._approvalPollTimer = setInterval(() => manualCheckApproval(true), 15000);
+}
+
+async function manualCheckApproval(silent) {
+  const student = getStudent();
+  if (!student) return;
+  if (!window.checkApprovalStatus) {
+    if (!silent) alert('백엔드 연결 안 됨');
+    return;
+  }
+  const result = await window.checkApprovalStatus(student.name);
+  if (result.status === 'found' && result.approval === 'approved') {
+    if (window._approvalPollTimer) clearInterval(window._approvalPollTimer);
+    const updated = { ...student, approval: 'approved' };
+    localStorage.setItem(STUDENT_KEY, JSON.stringify(updated));
+    navigate('/');
+  } else if (result.status === 'found' && result.approval === 'rejected') {
+    if (window._approvalPollTimer) clearInterval(window._approvalPollTimer);
+    alert('가입이 거절됐어. 원장님께 문의해줘.');
+  } else if (!silent) {
+    alert('아직 승인 안 됐어. 조금만 더 기다려줄래?');
+  }
 }
 
 // ===== 화면: 홈 =====
