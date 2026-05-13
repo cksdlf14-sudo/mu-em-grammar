@@ -54,23 +54,60 @@ function splitChapters(md) {
   return chapters.sort((a, b) => a.num - b.num);
 }
 
-// ===== Storage 레이어 (localStorage 영구) =====
-const STORAGE_KEY = 'muem-grammar-v1';
+// ===== 학생 정보 (이름 + 반) =====
+const STUDENT_KEY = 'muem-grammar-student';
+const CLASS_INFO = {
+  white:  { name: '화이트반', color: '#FFFFFF', text: '#1A2B3D', accent: '#E5E7EB', mode: 'white',  desc: '천천히, 격려와 함께' },
+  yellow: { name: '옐로우반', color: '#FEF3C7', text: '#92400E', accent: '#F59E0B', mode: 'yellow', desc: '힌트 먼저, 스스로 한 번 더' },
+  blue:   { name: '블루반',   color: '#DBEAFE', text: '#1E40AF', accent: '#3B82F6', mode: 'bluered', desc: '30초 고민 시간' },
+  red:    { name: '레드반',   color: '#FEE2E2', text: '#991B1B', accent: '#EF4444', mode: 'bluered', desc: '30초 고민 시간' },
+  black:  { name: '블랙반',   color: '#1F2937', text: '#F9FAFB', accent: '#FFD951', mode: 'black',  desc: '메타인지 — 왜 틀렸는지 스스로' }
+};
+function getStudent() {
+  try {
+    const raw = localStorage.getItem(STUDENT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function setStudent(student) {
+  // 첫 설정 시 기존 익명 데이터(muem-grammar-v1)를 학생 키로 마이그레이션
+  const oldKey = 'muem-grammar-v1';
+  const newKey = `muem-grammar-v1__${student.name}`;
+  const existing = localStorage.getItem(oldKey);
+  if (existing && !localStorage.getItem(newKey)) {
+    localStorage.setItem(newKey, existing);
+  }
+  localStorage.setItem(STUDENT_KEY, JSON.stringify(student));
+  _progress = Storage.load() || {};
+  if (typeof window !== 'undefined' && window.logEvent) {
+    window.logEvent('login', { extra: { firstTime: !existing, classKey: student.classKey } });
+  }
+}
+function clearStudent() {
+  localStorage.removeItem(STUDENT_KEY);
+  _progress = {};
+}
+
+// ===== Storage 레이어 (학생별 분기) =====
 const Storage = {
+  _key() {
+    const s = getStudent();
+    return s && s.name ? `muem-grammar-v1__${s.name}` : 'muem-grammar-v1';
+  },
   load() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(this._key());
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       return (parsed && typeof parsed === 'object') ? parsed : null;
     } catch (e) { return null; }
   },
   save(state) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    try { localStorage.setItem(this._key(), JSON.stringify(state)); }
     catch (e) { /* quota 등 무시 */ }
   },
   reset() {
-    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    try { localStorage.removeItem(this._key()); } catch (e) {}
   }
 };
 
@@ -84,8 +121,12 @@ let _lastResultNewRecord = false;
 function markChapterRead(unit, n) {
   if (!_progress[unit]) _progress[unit] = {};
   if (!Array.isArray(_progress[unit].story)) _progress[unit].story = [];
-  if (!_progress[unit].story.includes(n)) _progress[unit].story.push(n);
+  const isNew = !_progress[unit].story.includes(n);
+  if (isNew) _progress[unit].story.push(n);
   _saveProgress();
+  if (isNew && window.logEvent) {
+    window.logEvent('chapter_read', { questionId: `${unit}_ch${n}`, extra: { unit, chapter: n } });
+  }
 }
 function isChapterRead(unit, n) {
   const story = _progress[unit]?.story;
@@ -100,6 +141,11 @@ function saveQuizScore(unit, section, correct, total) {
     _progress[unit][section] = { correct, total };
   }
   _saveProgress();
+  if (window.logEvent) {
+    window.logEvent('session_end', {
+      extra: { unit, section, correct, total, pct: Math.round(correct / total * 100), newRecord: _lastResultNewRecord }
+    });
+  }
 }
 function getQuizScore(unit, section) {
   return _progress[unit]?.[section] || null;
@@ -135,11 +181,17 @@ function recordWrongAnswer(unit, section, q, userAnswer) {
   if (idx >= 0) _progress[unit].wrong[idx] = entry;
   else _progress[unit].wrong.push(entry);
   _saveProgress();
+  if (window.logEvent) {
+    window.logEvent('wrong_recorded', { questionId: q.id, extra: { unit, section, level: q.level, type: q.type } });
+  }
 }
 function clearWrongAnswer(unit, qid, section) {
   if (!_progress[unit]?.wrong) return;
   _progress[unit].wrong = _progress[unit].wrong.filter(w => !(w.qid === qid && w.section === section));
   _saveProgress();
+  if (window.logEvent) {
+    window.logEvent('wrong_cleared', { questionId: qid, extra: { unit, section } });
+  }
 }
 function getWrongList(unit) {
   return _progress[unit]?.wrong || [];
@@ -179,7 +231,9 @@ const routes = [
   { p: /^\/unit\/([^\/]+)\/quiz$/, fn: (m) => renderQuiz({ unit: m[1], section: 'quiz' }) },
   { p: /^\/unit\/([^\/]+)\/apply$/, fn: (m) => renderQuiz({ unit: m[1], section: 'apply' }) },
   { p: /^\/unit\/([^\/]+)\/review$/, fn: (m) => renderReview({ unit: m[1] }) },
-  { p: /^\/unit\/([^\/]+)\/result\/([^\/]+)$/, fn: (m) => renderResult({ unit: m[1], section: m[2] }) }
+  { p: /^\/unit\/([^\/]+)\/result\/([^\/]+)$/, fn: (m) => renderResult({ unit: m[1], section: m[2] }) },
+  { p: /^\/onboard$/, fn: () => renderOnboarding() },
+  { p: /^\/profile$/, fn: () => renderProfile() }
 ];
 
 function ensureHomeBtn() {
@@ -202,6 +256,17 @@ function router() {
   const path = (window.location.hash || '#/').slice(1);
   const backBtn = document.getElementById('backBtn');
   const homeBtn = ensureHomeBtn();
+
+  // 학생 정보 없으면 강제 온보딩 (단, /onboard 직접 접근은 허용)
+  const student = getStudent();
+  if (!student && path !== '/onboard') {
+    backBtn.style.display = 'none';
+    homeBtn.style.display = 'none';
+    renderOnboarding();
+    window.scrollTo(0, 0);
+    return;
+  }
+
   const isHome = path === '/' || path === '';
   backBtn.style.display = isHome ? 'none' : 'flex';
   backBtn.onclick = () => history.length > 1 ? history.back() : navigate('/');
@@ -224,6 +289,63 @@ function esc(s) {
 function charImg(name, alt) {
   return `<img class="hero-char" src="assets/character/${name}.png" alt="${esc(alt)}"
     onerror="this.outerHTML='<div class=&quot;char-placeholder&quot;>그램 일러스트<small>(폴더 동기화 대기)</small></div>'">`;
+}
+
+// ===== 화면: 온보딩 (이름 + 반 선택) =====
+function renderOnboarding() {
+  const existing = getStudent();
+  const initialName = existing ? existing.name : '';
+  const initialClass = existing ? existing.classKey : '';
+  const classCards = Object.entries(CLASS_INFO).map(([key, info]) => `
+    <button class="class-card ${initialClass === key ? 'selected' : ''}" data-class="${key}"
+      style="background:${info.color}; color:${info.text}; border-color:${info.accent};"
+      onclick="selectClass(this)">
+      <div class="class-card__dot" style="background:${info.accent};"></div>
+      <div class="class-card__name">${info.name}</div>
+      <div class="class-card__desc">${info.desc}</div>
+    </button>
+  `).join('');
+  $app().innerHTML = `
+    <section class="onboard-view">
+      <div class="onboard-greet">
+        ${charImg('mascot-hero', '그램')}
+        <h1 class="onboard-title">${existing ? '프로필 수정' : '안녕! 반가워'}</h1>
+        <p class="onboard-sub">${existing ? '이름이나 반을 바꿀 수 있어' : '시작하기 전에 너에 대해 알려줄래?'}</p>
+      </div>
+      <div class="onboard-section">
+        <label class="onboard-label" for="studentName">이름</label>
+        <input type="text" id="studentName" class="onboard-input" placeholder="예: 홍길동" maxlength="20" value="${esc(initialName)}">
+      </div>
+      <div class="onboard-section">
+        <label class="onboard-label">어느 반이야?</label>
+        <div class="class-grid">${classCards}</div>
+      </div>
+      <div class="onboard-actions">
+        <button class="btn-primary onboard-start" onclick="finishOnboarding()">${existing ? '저장' : '시작하기 →'}</button>
+        ${existing ? '<button class="btn-secondary" onclick="navigate(\'/\')">취소</button>' : ''}
+      </div>
+    </section>
+  `;
+}
+function selectClass(btn) {
+  document.querySelectorAll('.class-card').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function finishOnboarding() {
+  const nameEl = document.getElementById('studentName');
+  const name = (nameEl?.value || '').trim();
+  const selectedBtn = document.querySelector('.class-card.selected');
+  const classKey = selectedBtn?.dataset.class;
+  if (!name) { alert('이름을 적어줘 :)'); nameEl?.focus(); return; }
+  if (name.length > 20) { alert('이름이 너무 길어. 20자 이내로!'); return; }
+  if (!classKey) { alert('반을 골라줘!'); return; }
+  setStudent({ name, classKey, since: Date.now() });
+  navigate('/');
+}
+
+// ===== 화면: 프로필 (이름/반 수정) =====
+function renderProfile() {
+  renderOnboarding(); // 같은 화면 재활용
 }
 
 // ===== 화면: 홈 =====
@@ -257,11 +379,22 @@ function renderHome() {
         </div>
       </div>`;
   }
+  const student = getStudent();
+  const classInfo = student ? CLASS_INFO[student.classKey] : null;
+  const greetingHtml = student ? `
+    <button class="student-chip" onclick="navigate('/profile')" style="border-color:${classInfo?.accent || 'var(--c-primary)'};">
+      <span class="student-chip__dot" style="background:${classInfo?.accent || 'var(--c-primary)'};"></span>
+      <span class="student-chip__name">${esc(student.name)}</span>
+      <span class="student-chip__class">${classInfo?.name || ''}</span>
+      <span class="student-chip__edit">✎</span>
+    </button>
+  ` : '';
   $app().innerHTML = `
     <section class="hero">
       ${charImg('mascot-hero', '그램 — 어린 마법사')}
-      <h1 class="hero-title">안녕! 나는 <span class="accent">그램</span>이야</h1>
+      <h1 class="hero-title">안녕${student ? ', ' + esc(student.name) + '!' : '! 나는 <span class="accent">그램</span>이야'}</h1>
       <p class="hero-sub">문법은 외우는 게 아니야.<br>마법처럼 이해하는 거야.</p>
+      ${greetingHtml}
     </section>
     ${resumeCard}
     ${reviewBanner}
@@ -531,6 +664,9 @@ function showHint() {
     box.hidden = false;
     btn.style.display = 'none';
   }
+  if (window.logEvent) {
+    window.logEvent('hint_used', { questionId: q.id, extra: { unit: _qs.unit, section: _qs.section } });
+  }
 }
 function selectChoice(btn) {
   document.querySelectorAll('.quiz-choice').forEach(b => b.classList.remove('selected'));
@@ -548,6 +684,16 @@ function submitAnswer() {
   if (!userAns) { alert('답을 먼저 선택하거나 입력해주세요.'); return; }
   const isCorrect = checkAnswer(q, userAns);
   if (isCorrect) s.correct++;
+
+  // 모든 답안 시도를 로깅 (학원장 인사이트용)
+  if (window.logEvent) {
+    window.logEvent('answer', {
+      questionId: q.id,
+      answer: String(userAns).slice(0, 200),
+      correct: isCorrect,
+      extra: { unit: s.unit, section: s.section, type: q.type, level: q.level, mode: s.mode }
+    });
+  }
 
   // 일반 모드: 틀리면 오답 노트에 추가 / 복습 모드: 맞으면 노트에서 제거
   if (s.mode === 'normal') {
