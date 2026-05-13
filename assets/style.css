@@ -255,3 +255,22 @@ a { color: inherit; text-decoration: none; }
 .student-chip__name { font-weight: 700; color: var(--c-text); }
 .student-chip__class { color: var(--c-text-mute); font-size: 12px; }
 .student-chip__edit { color: var(--c-text-mute); margin-left: 4px; font-size: 12px; }
+
+/* ===== #20 회원가입 + 승인 대기 ===== */
+.onboard-label .required { color: var(--c-danger); font-weight: 700; margin-left: 2px; }
+.onboard-label .optional { color: var(--c-text-mute); font-weight: 500; font-size: 11px; margin-left: 4px; }
+.onboard-input:disabled { background: var(--c-primary-soft); color: var(--c-text-mute); cursor: not-allowed; }
+.onboard-start:disabled { opacity: 0.6; cursor: wait; }
+
+.pending-view { padding: 24px 0 40px; text-align: center; }
+.pending-view .hero-char { width: 160px; max-width: 50vw; margin: 0 auto 12px; display: block; }
+.pending-title { font-size: 22px; font-weight: 800; color: var(--c-primary); margin-bottom: 12px; letter-spacing: -0.01em; }
+.pending-desc { font-size: 14px; color: var(--c-text-mute); line-height: 1.65; margin-bottom: 24px; }
+.pending-desc small { display: inline-block; margin-top: 6px; font-size: 12px; opacity: 0.8; }
+.pending-info { background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 20px; text-align: left; }
+.pending-info__row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--c-border); font-size: 14px; }
+.pending-info__row:last-child { border-bottom: none; }
+.pending-info__row span { color: var(--c-text-mute); font-size: 12px; }
+.pending-info__row strong { color: var(--c-text); font-weight: 700; }
+.pending-actions { display: flex; flex-direction: column; gap: 10px; }
+.pending-actions .btn-primary, .pending-actions .btn-secondary { width: 100%; padding: 14px; font-size: 14px; }
