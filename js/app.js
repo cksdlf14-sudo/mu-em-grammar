@@ -114,6 +114,73 @@ function _saveProgress() { Storage.save(_progress); }
 // 결과화면용 일회성 플래그 (신기록 표시)
 let _lastResultNewRecord = false;
 
+// ===== 출석체크 + 7일 보상 시스템 =====
+function _todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function _yesterdayKey() {
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function getAttendance() {
+  if (!_progress.attendance) _progress.attendance = { dates: [], streak: 0, rewardsClaimed: 0, hintBonus: 0, unlockedIllusts: [], unlockedVideos: [] };
+  return _progress.attendance;
+}
+function checkInToday() {
+  const att = getAttendance();
+  const today = _todayKey();
+  const yesterday = _yesterdayKey();
+  if (att.dates.includes(today)) return { isNew: false, streak: att.streak, rewardReady: false };
+  // 오늘 첫 출석
+  att.dates.push(today);
+  // 어제도 출석했으면 streak +1, 아니면 1로 리셋
+  if (att.dates.includes(yesterday)) {
+    att.streak = (att.streak || 0) + 1;
+  } else {
+    att.streak = 1;
+  }
+  const rewardReady = att.streak >= 7;
+  _saveProgress();
+  if (window.logEvent) {
+    window.logEvent('attendance', { extra: { streak: att.streak, totalDays: att.dates.length } });
+  }
+  return { isNew: true, streak: att.streak, rewardReady };
+}
+function claimWeeklyReward() {
+  const att = getAttendance();
+  if (att.streak < 7) return null;
+  att.streak = 0; // 리셋
+  att.rewardsClaimed = (att.rewardsClaimed || 0) + 1;
+  // B: 힌트 +5
+  att.hintBonus = (att.hintBonus || 0) + 5;
+  // C: 그램 일러스트 잠금 해제 (rewardsClaimed 번째)
+  const illustNames = ['cheer', 'pointing', 'oops', 'reading', 'celebrate'];
+  const newIllust = illustNames[(att.rewardsClaimed - 1) % illustNames.length];
+  if (!att.unlockedIllusts.includes(newIllust)) att.unlockedIllusts.push(newIllust);
+  // D: 차닐 쌤 영상 슬롯 잠금 해제 (형님이 채울 자리)
+  const videoSlot = `video-${att.rewardsClaimed}`;
+  if (!att.unlockedVideos.includes(videoSlot)) att.unlockedVideos.push(videoSlot);
+  _saveProgress();
+  if (window.logEvent) {
+    window.logEvent('reward_claimed', { extra: { rewardNum: att.rewardsClaimed, illust: newIllust, videoSlot } });
+  }
+  return { hintBonus: 5, illust: newIllust, videoSlot, rewardNum: att.rewardsClaimed };
+}
+function getHintQuota(baseQuota) {
+  // baseQuota는 챕터 기본 힌트 한도 (예: 10)
+  const att = getAttendance();
+  return baseQuota + (att.hintBonus || 0);
+}
+function consumeHintBonus() {
+  // 챕터 시작 시 보너스 1회 차감 (안 쓰면 누적)
+  const att = getAttendance();
+  if (att.hintBonus > 0) {
+    att.hintBonus--;
+    _saveProgress();
+  }
+}
+
 function markChapterRead(unit, n) {
   if (!_progress[unit]) _progress[unit] = {};
   if (!Array.isArray(_progress[unit].story)) _progress[unit].story = [];
@@ -345,12 +412,48 @@ function renderOnboarding() {
         <label class="onboard-label">어느 반이야? <span class="required">*</span></label>
         <div class="class-grid">${classCards}</div>
       </div>
+      ${isEdit ? '' : `
+      <div class="onboard-section">
+        <div class="consent-box">
+          <label class="consent-row">
+            <input type="checkbox" id="consentPrivacy" class="consent-check">
+            <span class="consent-label"><span class="required">*</span> 개인정보 수집·이용에 동의합니다</span>
+          </label>
+          <button type="button" class="consent-toggle" onclick="togglePrivacyDetail(this)">자세히 보기 ▼</button>
+          <div class="consent-detail" id="privacyDetail" hidden>
+            <h4>개인정보 수집·이용 안내</h4>
+            <p><strong>수집 항목</strong>: 학생 이름, 학부모 이름, 전화번호, 주소(선택), 학습 진도·퀴즈 응답·오답 기록</p>
+            <p><strong>수집 목적</strong>: 학원 학습 관리, 학생별 맞춤 피드백, 학부모 상담</p>
+            <p><strong>보유 기간</strong>: 학원 이용 종료 후 1년 (이전 요청 시 즉시 삭제)</p>
+            <p><strong>동의 거부 권리</strong>: 동의 거부 시 서비스 이용 불가</p>
+            <p><strong>처리 위탁</strong>: Google (스프레드시트·메일 발송)</p>
+            <p style="color:var(--c-text-mute);font-size:11px;margin-top:8px;">개인정보보호법 제15조에 따라 안내드립니다. 만 14세 미만은 법정대리인 동의가 필수입니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="onboard-section">
+        <div class="consent-box">
+          <label class="consent-row">
+            <input type="checkbox" id="consentGuardian" class="consent-check">
+            <span class="consent-label"><span class="required">*</span> 학부모(법정대리인)가 본 가입에 동의했습니다</span>
+          </label>
+          <p class="consent-note">만 14세 미만은 학부모 동의가 법적으로 필수예요.</p>
+        </div>
+      </div>
+      `}
       <div class="onboard-actions">
         <button class="btn-primary onboard-start" onclick="finishOnboarding()">${isEdit ? '저장' : '회원가입 →'}</button>
         ${isEdit ? '<button class="btn-secondary" onclick="navigate(\'/\')">취소</button>' : ''}
       </div>
     </section>
   `;
+}
+function togglePrivacyDetail(btn) {
+  const detail = document.getElementById('privacyDetail');
+  if (!detail) return;
+  const isHidden = detail.hidden;
+  detail.hidden = !isHidden;
+  btn.textContent = isHidden ? '접기 ▲' : '자세히 보기 ▼';
 }
 function selectClass(btn) {
   document.querySelectorAll('.class-card').forEach(b => b.classList.remove('selected'));
@@ -375,12 +478,16 @@ async function finishOnboarding() {
     return;
   }
 
-  // 신규 가입 모드: 학부모/전화 필수
+  // 신규 가입 모드: 학부모/전화/동의 필수
   const parentName = (document.getElementById('parentName')?.value || '').trim();
   const phone = (document.getElementById('studentPhone')?.value || '').trim();
   const address = (document.getElementById('studentAddress')?.value || '').trim();
+  const consentPrivacy = document.getElementById('consentPrivacy')?.checked;
+  const consentGuardian = document.getElementById('consentGuardian')?.checked;
   if (!parentName) { alert('학부모 이름은 필수야!'); return; }
   if (!phone) { alert('전화번호는 필수야!'); return; }
+  if (!consentPrivacy) { alert('개인정보 수집·이용에 동의해줘 (필수)'); document.getElementById('consentPrivacy')?.focus(); return; }
+  if (!consentGuardian) { alert('학부모님이 동의해주셨는지 확인해줘 (필수)'); document.getElementById('consentGuardian')?.focus(); return; }
 
   const btn = document.querySelector('.onboard-start');
   if (btn) { btn.disabled = true; btn.textContent = '회원가입 중...'; }
@@ -471,6 +578,8 @@ async function manualCheckApproval(silent) {
 function renderHome() {
   const lv = getLastVisit();
   const totalWrong = getTotalWrong();
+  // 출석체크 (이미 오늘 출석했으면 isNew=false)
+  const attCheck = getStudent() ? checkInToday() : null;
   let resumeCard = '';
   if (lv && UNITS[lv.unit]) {
     const u = UNITS[lv.unit];
@@ -498,6 +607,25 @@ function renderHome() {
         </div>
       </div>`;
   }
+  // 출석 streak 카드
+  let attendanceCard = '';
+  if (student) {
+    const att = getAttendance();
+    const streak = att.streak || 0;
+    const remaining = Math.max(0, 7 - streak);
+    const isRewardReady = streak >= 7;
+    attendanceCard = `
+      <div class="attendance-card ${isRewardReady ? 'reward-ready' : ''}">
+        <div class="attendance-card__icon">${isRewardReady ? '🎁' : '🔥'}</div>
+        <div class="attendance-card__info">
+          <strong>${isRewardReady ? '7일 연속 달성! 보상 받기' : streak + '일 연속 출석'}</strong>
+          <span>${isRewardReady ? '눌러서 보상 박스 열기' : remaining === 0 ? '오늘 출석 완료' : `보상까지 ${remaining}일 남음`}</span>
+        </div>
+        <div class="attendance-card__dots">
+          ${Array.from({length: 7}, (_, i) => `<span class="streak-dot ${i < streak ? 'on' : ''}"></span>`).join('')}
+        </div>
+      </div>`;
+  }
   const student = getStudent();
   const classInfo = student ? CLASS_INFO[student.classKey] : null;
   const greetingHtml = student ? `
@@ -516,6 +644,7 @@ function renderHome() {
       ${greetingHtml}
     </section>
     ${resumeCard}
+    ${attendanceCard}
     ${reviewBanner}
     <section class="unit-list">
       <h2 class="section-title">오늘 어떤 마법을 배울까?</h2>
@@ -529,6 +658,57 @@ function renderHome() {
     </section>
     <footer class="app-foot"><p>뮤엠영어 학원</p></footer>
   `;
+  // 출석 카드 클릭 핸들러 + 자동 모달
+  const attCard = document.querySelector('.attendance-card.reward-ready');
+  if (attCard) {
+    attCard.style.cursor = 'pointer';
+    attCard.onclick = showWeeklyRewardModal;
+  }
+  // 새로 7일 달성한 경우 자동으로 모달 띄움
+  if (attCheck && attCheck.rewardReady) {
+    setTimeout(showWeeklyRewardModal, 600);
+  }
+}
+
+// ===== 7일 연속 보상 모달 =====
+function showWeeklyRewardModal() {
+  const reward = claimWeeklyReward();
+  if (!reward) return;
+  const modal = document.createElement('div');
+  modal.className = 'reward-modal-overlay';
+  modal.innerHTML = `
+    <div class="reward-modal">
+      <button class="reward-modal__close" onclick="this.closest('.reward-modal-overlay').remove(); renderHome();">×</button>
+      <div class="reward-modal__crown">👑</div>
+      <div class="reward-modal__title">7일 연속 출석!</div>
+      <div class="reward-modal__subtitle">${reward.rewardNum}번째 보상 박스 🎁</div>
+      <div class="reward-modal__items">
+        <div class="reward-item">
+          <div class="reward-item__emoji">💡</div>
+          <div class="reward-item__body">
+            <strong>힌트 +5 충전</strong>
+            <span>다음 챕터부터 적용</span>
+          </div>
+        </div>
+        <div class="reward-item">
+          <div class="reward-item__emoji">✨</div>
+          <div class="reward-item__body">
+            <strong>그램 일러스트 잠금 해제</strong>
+            <span>${reward.illust} 포즈 획득</span>
+          </div>
+        </div>
+        <div class="reward-item">
+          <div class="reward-item__emoji">🎬</div>
+          <div class="reward-item__body">
+            <strong>차닐 쌤 영상 잠금 해제</strong>
+            <span>곧 공개 예정 (슬롯 #${reward.rewardNum})</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary reward-modal__btn" onclick="this.closest('.reward-modal-overlay').remove(); renderHome();">받았어! 🎉</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
 }
 function unitCard(id) {
   const u = UNITS[id];
@@ -655,12 +835,19 @@ async function renderQuiz({ unit, section }) {
   $app().innerHTML = '<div class="loading">불러오는 중...</div>';
   try {
     const data = await loadContent(unit, section);
+    const baseQuota = 10;
     _qs = {
       unit, section,
       mode: 'normal',
       questions: data.questions,
       idx: 0, correct: 0,
-      answered: false, userAnswer: null
+      answered: false, userAnswer: null,
+      hintsRemaining: getHintQuota(baseQuota),
+      hintsMax: getHintQuota(baseQuota),
+      hintsUsed: 0,
+      pausesRemaining: 2,
+      pausesUsed: 0,
+      timerInterval: null
     };
     showQuestion();
   } catch (e) {
@@ -703,7 +890,10 @@ function renderReview({ unit }) {
     mode: 'review',
     questions,
     idx: 0, correct: 0,
-    answered: false, userAnswer: null
+    answered: false, userAnswer: null,
+    hintsRemaining: 999,
+    hintsMax: 999,
+    hintsUsed: 0
   };
   showQuestion();
 }
@@ -753,14 +943,44 @@ function showQuestion() {
   }
   const levelLabel = { easy: '쉬움', medium: '보통', hard: '어려움' }[q.level] || q.level;
   const reviewBadge = s.mode === 'review' ? `<span class="quiz-mode-chip">📒 복습 모드</span>` : '';
-  const hintHtml = q.hint ? `
-      <button class="hint-btn" id="hintBtn" onclick="showHint()">💡 힌트 보기</button>
-      <div class="hint-box" id="hintBox" hidden></div>` : '';
+  let hintHtml = '';
+  if (q.hint) {
+    const hintsLeft = s.hintsRemaining || 0;
+    const hintsMax = s.hintsMax || 10;
+    if (s.mode === 'review') {
+      hintHtml = `
+      <div class="hint-section">
+        <button class="hint-btn" id="hintBtn" onclick="showHint()">💡 힌트 보기 (복습 무제한)</button>
+        <div class="hint-box" id="hintBox" hidden></div>
+      </div>`;
+    } else if (hintsLeft > 0) {
+      const pct = Math.max(0, Math.min(100, (hintsLeft / hintsMax) * 100));
+      hintHtml = `
+      <div class="hint-section">
+        <button class="hint-btn" id="hintBtn" onclick="showHint()">💡 힌트 보기 <span class="hint-counter">${hintsLeft}/${hintsMax}</span></button>
+        <div class="hint-gauge"><span style="width:${pct}%"></span></div>
+        <div class="hint-box" id="hintBox" hidden></div>
+      </div>`;
+    } else {
+      hintHtml = `
+      <div class="hint-section">
+        <button class="hint-btn hint-btn--depleted" disabled>💡 힌트 다 썼어 ㅠㅠ (이번 챕터 끝)</button>
+        <div class="hint-box" id="hintBox" hidden></div>
+      </div>`;
+    }
+  }
+  const timerRow = s.mode === 'normal' ? `
+    <div class="timer-row">
+      <div class="timer-bar-container"><div class="timer-bar good" id="timerBar" style="width:100%"></div></div>
+      <span class="timer-text" id="timerText">--</span>
+      <button class="pause-btn" id="pauseBtn" onclick="pauseTimer()" ${s.pausesRemaining <= 0 ? 'disabled' : ''}>⏸ ${s.pausesRemaining}/2</button>
+    </div>` : '';
   $app().innerHTML = `
     <div class="quiz-header">
       <div class="quiz-progress"><span style="width:${pct}%"></span></div>
       <span class="quiz-count">${s.idx + 1} / ${s.questions.length}</span>
     </div>
+    ${timerRow}
     <div class="quiz-question">
       ${reviewBadge}
       <span class="quiz-level-chip ${q.level}">${levelLabel}</span>
@@ -772,10 +992,135 @@ function showQuestion() {
     <div class="quiz-actions">
       <button class="btn-primary" id="submitBtn" onclick="submitAnswer()">정답 확인</button>
     </div>`;
+
+  // 일반 모드만 타이머 시작 (복습 모드는 학습용이라 타이머 없음)
+  if (s.mode === 'normal') {
+    startQuestionTimer(q.level);
+  }
 }
+
+// ===== #17 타이머 (하드 모드: 시간 끝 = 자동 오답) =====
+const LEVEL_TIME = { easy: 30, medium: 45, hard: 60 };
+function startQuestionTimer(level) {
+  clearQuestionTimer();
+  const seconds = LEVEL_TIME[level] || 45;
+  _qs.timerDuration = seconds;
+  _qs.timerStartTime = Date.now();
+  _qs.isPaused = false;
+  _qs.timerSeconds = seconds;
+  _qs.timerInterval = setInterval(_timerTick, 100);
+  _updateTimerDisplay();
+}
+function clearQuestionTimer() {
+  if (_qs && _qs.timerInterval) {
+    clearInterval(_qs.timerInterval);
+    _qs.timerInterval = null;
+  }
+}
+function _timerTick() {
+  if (!_qs || _qs.answered || _qs.isPaused) return;
+  const elapsed = (Date.now() - _qs.timerStartTime) / 1000;
+  _qs.timerSeconds = Math.max(0, _qs.timerDuration - elapsed);
+  _updateTimerDisplay();
+  if (_qs.timerSeconds <= 0) {
+    clearQuestionTimer();
+    onTimeUp();
+  }
+}
+function _updateTimerDisplay() {
+  const bar = document.getElementById('timerBar');
+  const text = document.getElementById('timerText');
+  if (!bar || !text || !_qs) return;
+  const pct = (_qs.timerSeconds / _qs.timerDuration) * 100;
+  bar.style.width = Math.max(0, pct) + '%';
+  bar.className = 'timer-bar ' + (pct > 50 ? 'good' : pct > 25 ? 'warn' : 'danger');
+  text.textContent = Math.ceil(_qs.timerSeconds) + '초';
+}
+function pauseTimer() {
+  if (!_qs || _qs.isPaused || _qs.answered) return;
+  if (_qs.pausesRemaining <= 0) return;
+  _qs.isPaused = true;
+  _qs.pausesUsed = (_qs.pausesUsed || 0) + 1;
+  _qs.pausesRemaining = (_qs.pausesRemaining || 0) - 1;
+  // 일시정지 시점의 잔여시간 저장
+  _qs.pausedRemainingSec = _qs.timerSeconds;
+  showPauseOverlay();
+  if (window.logEvent) {
+    window.logEvent('pause', { questionId: _qs.questions[_qs.idx]?.id, extra: { remaining: _qs.pausesRemaining } });
+  }
+}
+function resumeTimer() {
+  if (!_qs || !_qs.isPaused) return;
+  _qs.isPaused = false;
+  // 일시정지 시점부터 다시 시작
+  _qs.timerDuration = _qs.pausedRemainingSec;
+  _qs.timerStartTime = Date.now();
+  hidePauseOverlay();
+  // 일시정지 버튼 카운트 갱신
+  const pbtn = document.getElementById('pauseBtn');
+  if (pbtn) {
+    pbtn.textContent = '⏸ ' + _qs.pausesRemaining + '/2';
+    if (_qs.pausesRemaining <= 0) pbtn.disabled = true;
+  }
+}
+function showPauseOverlay() {
+  hidePauseOverlay();
+  const overlay = document.createElement('div');
+  overlay.id = 'pauseOverlay';
+  overlay.className = 'pause-overlay';
+  overlay.innerHTML = `
+    <div class="pause-modal">
+      <div class="pause-modal__icon">⏸</div>
+      <div class="pause-modal__title">일시정지 중</div>
+      <p class="pause-modal__desc">화장실 갔다 와도 돼!<br>준비되면 재개 눌러 ㅎ</p>
+      <button class="btn-primary pause-modal__resume" onclick="resumeTimer()">▶ 재개하기</button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+function hidePauseOverlay() {
+  const o = document.getElementById('pauseOverlay');
+  if (o) o.remove();
+}
+function onTimeUp() {
+  if (!_qs || _qs.answered) return;
+  const s = _qs;
+  const q = s.questions[s.idx];
+  s.answered = true;
+  // 시간 초과 = 자동 오답
+  if (window.logEvent) {
+    window.logEvent('answer', {
+      questionId: q.id, answer: '__TIMEOUT__', correct: false,
+      timeTaken: s.timerDuration,
+      extra: { unit: s.unit, section: s.section, type: q.type, level: q.level, mode: s.mode, timedOut: true }
+    });
+  }
+  if (s.mode === 'normal') {
+    recordWrongAnswer(s.unit, s.section, q, '시간 초과');
+  }
+  // UI 업데이트 — 정답 표시
+  if (q.type === 'choice' || q.type === 'antecedent') {
+    document.querySelectorAll('.quiz-choice').forEach(btn => {
+      if (btn.dataset.c === q.answer) btn.classList.add('correct');
+      btn.disabled = true;
+    });
+  } else {
+    const inp = document.getElementById('quizInput');
+    if (inp) inp.disabled = true;
+  }
+  const fb = document.getElementById('quizFeedback');
+  if (fb) {
+    fb.className = 'quiz-feedback incorrect';
+    fb.innerHTML = `<div class="answer-row">⏰ 시간 초과! 정답: <em>${esc(q.answer)}</em></div><div>${esc(q.explanation)}</div>`;
+  }
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) submitBtn.textContent = s.idx + 1 >= s.questions.length ? '결과 보기 →' : '다음 문제 →';
+}
+
 function showHint() {
   const q = _qs && _qs.questions[_qs.idx];
   if (!q || !q.hint) return;
+  // 일반 모드에서 잔여 0이면 차단
+  if (_qs.mode === 'normal' && _qs.hintsRemaining <= 0) return;
   const box = document.getElementById('hintBox');
   const btn = document.getElementById('hintBtn');
   if (box && btn) {
@@ -783,8 +1128,14 @@ function showHint() {
     box.hidden = false;
     btn.style.display = 'none';
   }
+  // 일반 모드만 카운트 차감 + 출석 보너스도 차감
+  if (_qs.mode === 'normal') {
+    _qs.hintsRemaining = Math.max(0, (_qs.hintsRemaining || 0) - 1);
+    _qs.hintsUsed = (_qs.hintsUsed || 0) + 1;
+    consumeHintBonus();
+  }
   if (window.logEvent) {
-    window.logEvent('hint_used', { questionId: q.id, extra: { unit: _qs.unit, section: _qs.section } });
+    window.logEvent('hint_used', { questionId: q.id, extra: { unit: _qs.unit, section: _qs.section, remaining: _qs.hintsRemaining } });
   }
 }
 function selectChoice(btn) {
@@ -795,12 +1146,14 @@ function selectChoice(btn) {
 function submitAnswer() {
   const s = _qs;
   const q = s.questions[s.idx];
-  if (s.answered) { s.idx++; showQuestion(); return; }
+  if (s.answered) { clearQuestionTimer(); s.idx++; showQuestion(); return; }
   let userAns = s.userAnswer;
   if (q.type !== 'choice' && q.type !== 'antecedent') {
     userAns = document.getElementById('quizInput').value.trim();
   }
   if (!userAns) { alert('답을 먼저 선택하거나 입력해주세요.'); return; }
+  // 타이머 중단 (답 제출 즉시)
+  clearQuestionTimer();
   const isCorrect = checkAnswer(q, userAns);
   if (isCorrect) s.correct++;
 
@@ -810,8 +1163,18 @@ function submitAnswer() {
       questionId: q.id,
       answer: String(userAns).slice(0, 200),
       correct: isCorrect,
-      extra: { unit: s.unit, section: s.section, type: q.type, level: q.level, mode: s.mode }
+      extra: { unit: s.unit, section: s.section, type: q.type, level: q.level, mode: s.mode, classMode: _getClassMode() }
     });
+  }
+
+  // 반별 차등 피드백 분기 (오답 + 일반 모드 + 첫 시도일 때만)
+  const classMode = _getClassMode();
+  const isFirstClassTry = !s._classModeAttempted;
+  if (!isCorrect && s.mode === 'normal' && isFirstClassTry && classMode !== 'white') {
+    s._classModeAttempted = true;
+    if (classMode === 'yellow') { _showYellowFeedback(q, userAns); return; }
+    if (classMode === 'bluered') { _showBlueRedFeedback(q, userAns); return; }
+    if (classMode === 'black') { _showBlackFeedback(q, userAns); return; }
   }
 
   // 일반 모드: 틀리면 오답 노트에 추가 / 복습 모드: 맞으면 노트에서 제거
@@ -837,9 +1200,154 @@ function submitAnswer() {
   fb.innerHTML = `
     <div class="answer-row">${isCorrect ? '✓ 정답!' : '✗ 아쉬워!'}${!isCorrect ? ` 정답: <em>${esc(q.answer)}</em>` : ''}</div>
     <div>${esc(q.explanation)}</div>`;
+  // 화이트반: 오답일 때 격려 멘트 추가
+  if (!isCorrect && classMode === 'white') {
+    const cheers = ['괜찮아, 이번엔 같이 보자!', '한 번 더 보면 알 수 있어!', '그램이랑 같이 풀어보자 :)', '실수해도 괜찮아!', '천천히 다시 보자!'];
+    const cheer = cheers[Math.floor(Math.random() * cheers.length)];
+    const cheerEl = document.createElement('div');
+    cheerEl.className = 'cheer-banner';
+    cheerEl.textContent = '💙 ' + cheer;
+    fb.prepend(cheerEl);
+  }
   const isLast = s.idx + 1 >= s.questions.length;
   document.getElementById('submitBtn').textContent = isLast ? '결과 보기 →' : '다음 문제 →';
 }
+
+// ===== #18 반별 차등 피드백 함수들 =====
+function _getClassMode() {
+  const student = getStudent();
+  return (student && CLASS_INFO[student.classKey]) ? CLASS_INFO[student.classKey].mode : 'white';
+}
+function _updateSubmitBtnText() {
+  const isLast = _qs && _qs.idx + 1 >= _qs.questions.length;
+  const btn = document.getElementById('submitBtn');
+  if (btn) btn.textContent = isLast ? '결과 보기 →' : '다음 문제 →';
+}
+function _highlightAnswer(q, userAns) {
+  if (q.type === 'choice' || q.type === 'antecedent') {
+    document.querySelectorAll('.quiz-choice').forEach(btn => {
+      const c = btn.dataset.c;
+      if (c === q.answer) btn.classList.add('correct');
+      else if (c === userAns) btn.classList.add('incorrect');
+      btn.disabled = true;
+    });
+  } else {
+    const inp = document.getElementById('quizInput');
+    if (inp) inp.disabled = true;
+  }
+}
+
+// 옐로우반: 힌트만 먼저, "모르겠어요" 누르면 정답 공개
+function _showYellowFeedback(q, userAns) {
+  _qs._yellowFirstAns = userAns;
+  const fb = document.getElementById('quizFeedback');
+  fb.className = 'quiz-feedback class-yellow';
+  fb.innerHTML = `
+    <div class="class-feedback__title">🟡 한 번 더 생각해봐</div>
+    ${q.hint ? `<div class="yellow-hint"><span class="hint-icon">💡</span><span>${esc(q.hint)}</span></div>` : '<div class="yellow-hint">위 힌트를 다시 한 번 봐!</div>'}
+    <button class="btn-secondary yellow-reveal-btn" onclick="_revealYellowAnswer()">모르겠어요, 정답 보기 →</button>
+  `;
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) submitBtn.style.display = 'none';
+}
+window._revealYellowAnswer = function() {
+  const q = _qs.questions[_qs.idx];
+  _qs.answered = true;
+  // 오답 노트 + 답 강조
+  if (_qs.mode === 'normal') recordWrongAnswer(_qs.unit, _qs.section, q, _qs._yellowFirstAns);
+  _highlightAnswer(q, _qs._yellowFirstAns);
+  const fb = document.getElementById('quizFeedback');
+  fb.className = 'quiz-feedback incorrect';
+  fb.innerHTML = `
+    <div class="answer-row">정답: <em>${esc(q.answer)}</em></div>
+    <div>${esc(q.explanation)}</div>`;
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) { submitBtn.style.display = ''; _updateSubmitBtnText(); }
+};
+
+// 블루/레드반: "다시 생각해봐" + 30초 카운트다운 → 자동 공개
+function _showBlueRedFeedback(q, userAns) {
+  _qs._blueredFirstAns = userAns;
+  const fb = document.getElementById('quizFeedback');
+  fb.className = 'quiz-feedback class-bluered';
+  fb.innerHTML = `
+    <div class="class-feedback__title">🤔 다시 생각해봐</div>
+    <div class="bluered-think">정답 공개까지 <span id="brCountdown">30</span>초 — 차분히 머리 굴려봐.</div>
+    <div class="bluered-bar"><div id="brBar" style="width:100%"></div></div>`;
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) submitBtn.style.display = 'none';
+  let secLeft = 30;
+  _qs._brInterval = setInterval(() => {
+    secLeft -= 0.1;
+    const cnt = document.getElementById('brCountdown');
+    const bar = document.getElementById('brBar');
+    if (cnt) cnt.textContent = Math.max(0, Math.ceil(secLeft));
+    if (bar) bar.style.width = Math.max(0, secLeft / 30 * 100) + '%';
+    if (secLeft <= 0) {
+      clearInterval(_qs._brInterval);
+      _qs._brInterval = null;
+      _revealBlueRedAnswer();
+    }
+  }, 100);
+}
+function _revealBlueRedAnswer() {
+  const q = _qs.questions[_qs.idx];
+  _qs.answered = true;
+  if (_qs.mode === 'normal') recordWrongAnswer(_qs.unit, _qs.section, q, _qs._blueredFirstAns);
+  _highlightAnswer(q, _qs._blueredFirstAns);
+  const fb = document.getElementById('quizFeedback');
+  fb.className = 'quiz-feedback incorrect';
+  fb.innerHTML = `
+    <div class="answer-row">⏰ 30초 끝! 정답: <em>${esc(q.answer)}</em></div>
+    <div>${esc(q.explanation)}</div>`;
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) { submitBtn.style.display = ''; _updateSubmitBtnText(); }
+}
+
+// 블랙반: 정답만 공개 (설명 X) + 메타인지 입력창
+function _showBlackFeedback(q, userAns) {
+  _qs._blackFirstAns = userAns;
+  _qs.answered = true;
+  if (_qs.mode === 'normal') recordWrongAnswer(_qs.unit, _qs.section, q, userAns);
+  _highlightAnswer(q, userAns);
+  const fb = document.getElementById('quizFeedback');
+  fb.className = 'quiz-feedback class-black';
+  fb.innerHTML = `
+    <div class="class-feedback__title">⚫ 메타인지 모드</div>
+    <div class="answer-row">정답: <em>${esc(q.answer)}</em></div>
+    <div class="black-meta-prompt">왜 틀렸다고 생각해? 스스로 분석해봐:</div>
+    <textarea id="blackMetaInput" class="black-meta-input" placeholder="예: 'who'는 사람한테 쓰는 거시기인데 사물에 썼어..." maxlength="300"></textarea>
+    <button class="btn-secondary" onclick="_submitMetacognition()">제출 → AI 분석 받기</button>
+    <div id="blackAiResponse"></div>`;
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) submitBtn.style.display = 'none';
+}
+window._submitMetacognition = function() {
+  const input = document.getElementById('blackMetaInput');
+  const ai = document.getElementById('blackAiResponse');
+  if (!input || !ai) return;
+  const text = input.value.trim();
+  if (text.length < 5) { alert('조금 더 길게 적어볼래? (5자 이상)'); return; }
+  input.disabled = true;
+  // v2.0 mock 응답 (v2.5에 Claude API 연동 예정)
+  let aiMsg;
+  if (text.length > 30) aiMsg = '좋은 분석이야! 핵심을 잘 짚었어. 정답 해설과 비교해서 한 번 더 정리해보자.';
+  else if (text.length > 10) aiMsg = '음, 방향은 맞아. 좀 더 깊이 파보면 어떨까? 정답 해설을 너의 분석과 비교해봐.';
+  else aiMsg = '시작은 좋아! 다음엔 더 구체적으로 적으면 학습 효과가 커져.';
+  ai.innerHTML = `
+    <div class="black-ai-msg">
+      <div class="black-ai-header">🤖 그램 AI 분석</div>
+      <p>${esc(aiMsg)}</p>
+      <p class="black-ai-explanation"><strong>정답 해설:</strong> ${esc(_qs.questions[_qs.idx].explanation)}</p>
+      <p class="black-ai-note">🚧 베타 — 정식 출시 시 더 정교한 1:1 분석 제공</p>
+    </div>`;
+  if (window.logEvent) {
+    window.logEvent('metacognition', { questionId: _qs.questions[_qs.idx].id, answer: text.slice(0, 200), extra: { unit: _qs.unit, section: _qs.section } });
+  }
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) { submitBtn.style.display = ''; _updateSubmitBtnText(); }
+};
+
 function checkAnswer(q, userAns) {
   const correct = q.answer.trim().toLowerCase();
   const user = userAns.trim().toLowerCase();
