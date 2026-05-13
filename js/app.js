@@ -243,7 +243,7 @@ function ensureHomeBtn() {
     btn.id = 'homeBtn';
     btn.className = 'home-btn';
     btn.setAttribute('aria-label', '홈으로');
-    btn.textContent = '🏠';
+    btn.innerHTML = '🏠 메인';
     btn.onclick = (e) => { e.preventDefault(); navigate('/'); };
     btn.style.display = 'none';
     const header = document.querySelector('.app-header');
