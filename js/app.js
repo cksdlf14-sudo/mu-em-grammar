@@ -579,7 +579,8 @@ function renderHome() {
   const lv = getLastVisit();
   const totalWrong = getTotalWrong();
   // 출석체크 (이미 오늘 출석했으면 isNew=false)
-  const attCheck = getStudent() ? checkInToday() : null;
+  const student = getStudent();
+  const attCheck = student ? checkInToday() : null;
   let resumeCard = '';
   if (lv && UNITS[lv.unit]) {
     const u = UNITS[lv.unit];
