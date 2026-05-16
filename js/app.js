@@ -627,7 +627,6 @@ function renderHome() {
         </div>
       </div>`;
   }
-  const student = getStudent();
   const classInfo = student ? CLASS_INFO[student.classKey] : null;
   const greetingHtml = student ? `
     <button class="student-chip" onclick="navigate('/profile')" style="border-color:${classInfo?.accent || 'var(--c-primary)'};">
